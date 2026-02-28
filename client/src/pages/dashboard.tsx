@@ -6,15 +6,28 @@ import { getStoredUser, clearUser } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { ARCHETYPES, type ArchetypeId, type Fragrance, type VaultItem, type ToTryItem, WEAR_OCCASIONS, FAMILY_COLORS } from "@shared/schema";
 
-type Tab = "home" | "vault" | "discover" | "to-try";
+type MainTab = "home" | "explore" | "profile";
+type HomeSubTab = "vault" | "log" | "totry";
+type ExploreSubTab = "feed" | "exchange";
+
+interface FeedPostData {
+  id: string; userId: string; type: string; content: string | null;
+  fragranceId: string | null; rating: number | null; likeCount: number; createdAt: string;
+  user: { id: string; username: string; displayName: string | null; archetypeId: string | null } | null;
+  fragrance: Fragrance | null; liked: boolean;
+}
+
+interface WearLogData {
+  id: string; userId: string; fragranceId: string; occasion: string | null;
+  notes: string | null; wornAt: string;
+  fragrance?: Fragrance | null;
+}
 
 function useColors() {
   const { theme } = useTheme();
   const d = theme === "dark";
   return {
-    isDark: d,
-    bg: d ? "#000" : "#FFF8F5",
-    fg: d ? "#fff" : "#1a1a1a",
+    isDark: d, bg: d ? "#000" : "#FFF8F5", fg: d ? "#fff" : "#1a1a1a",
     fgSoft: d ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)",
     fgMuted: d ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.25)",
     fgDim: d ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.35)",
@@ -31,101 +44,108 @@ function useColors() {
     panelBg: d ? "#0a0a0a" : "#fff",
     chipActive: d ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)",
     chipBorder: d ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
-    gold: "rgba(212,175,55,0.85)",
-    goldDim: "rgba(212,175,55,0.5)",
-    green: "rgba(180,220,180,0.85)",
-    greenDim: "rgba(180,220,180,0.5)",
-    shelfGlow: d ? "rgba(255,255,255,0.03)" : "rgba(180,160,140,0.08)",
+    gold: "rgba(212,175,55,0.85)", goldDim: "rgba(212,175,55,0.5)",
+    green: "rgba(180,220,180,0.85)", greenDim: "rgba(180,220,180,0.5)",
+    violet: "rgba(138,100,220,1)", violetDim: "rgba(138,100,220,0.4)",
+    shelfGlow: d ? "rgba(212,175,55,0.08)" : "rgba(180,160,140,0.12)",
     shelfBorder: d ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
   };
 }
 
-const PRIORITIES = [
-  { value: "must-try", label: "Must Try" },
-  { value: "curious", label: "Curious" },
-  { value: "someday", label: "Someday" },
-];
-
 const BOTTLE_SHAPES = [
   (color: string, fill: number, uid: string) => (
     <svg viewBox="0 0 60 100" width="60" height="100">
-      <rect x="22" y="4" width="16" height="8" rx="2" fill={color} opacity="0.4" />
-      <rect x="26" y="0" width="8" height="6" rx="1.5" fill={color} opacity="0.3" />
+      <defs>
+        <linearGradient id={`shine0-${uid}`} x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="white" stopOpacity="0.15" /><stop offset="100%" stopColor="white" stopOpacity="0" /></linearGradient>
+        <clipPath id={`cp0-${uid}`}><rect x="12" y="14" width="36" height="80" rx="6" /></clipPath>
+      </defs>
+      <rect x="22" y="4" width="16" height="8" rx="2" fill="gold" opacity="0.5" />
+      <rect x="26" y="0" width="8" height="6" rx="1.5" fill="gold" opacity="0.4" />
       <rect x="12" y="14" width="36" height="80" rx="6" fill={color} opacity="0.12" stroke={color} strokeWidth="0.8" strokeOpacity="0.3" />
-      <clipPath id={`cp0-${uid}`}><rect x="12" y="14" width="36" height="80" rx="6" /></clipPath>
-      <rect x="12" y={14 + 80 * (1 - fill / 100)} width="36" height={80 * fill / 100} clipPath={`url(#cp0-${uid})`} fill={color} opacity="0.35" />
-      <rect x="16" y="18" width="4" height="30" rx="2" fill="white" opacity="0.08" />
+      <rect x="12" y={14 + 80 * (1 - fill / 100)} width="36" height={80 * fill / 100} clipPath={`url(#cp0-${uid})`} fill={color} opacity="0.4" />
+      <rect x="12" y="14" width="36" height="80" rx="6" fill={`url(#shine0-${uid})`} />
+      <line x1="18" y1="20" x2="22" y2="70" stroke="white" strokeWidth="1.5" opacity="0.08" strokeLinecap="round" />
+      <text x="30" y="60" textAnchor="middle" fontSize="5" fill="white" opacity="0.3" fontFamily="serif" letterSpacing="0.5"></text>
     </svg>
   ),
   (color: string, fill: number, uid: string) => (
     <svg viewBox="0 0 60 100" width="60" height="100">
-      <rect x="24" y="2" width="12" height="10" rx="2" fill={color} opacity="0.4" />
-      <rect x="27" y="0" width="6" height="4" rx="1" fill={color} opacity="0.3" />
+      <defs>
+        <linearGradient id={`shine1-${uid}`} x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="white" stopOpacity="0.12" /><stop offset="100%" stopColor="white" stopOpacity="0" /></linearGradient>
+        <clipPath id={`cp1-${uid}`}><ellipse cx="30" cy="58" rx="22" ry="36" /></clipPath>
+      </defs>
+      <rect x="24" y="2" width="12" height="10" rx="2" fill="silver" opacity="0.5" />
+      <rect x="27" y="0" width="6" height="4" rx="1" fill="silver" opacity="0.4" />
       <ellipse cx="30" cy="58" rx="22" ry="36" fill={color} opacity="0.12" stroke={color} strokeWidth="0.8" strokeOpacity="0.3" />
-      <clipPath id={`cp1-${uid}`}><ellipse cx="30" cy="58" rx="22" ry="36" /></clipPath>
-      <rect x="8" y={58 + 36 - 72 * fill / 100} width="44" height={72 * fill / 100} clipPath={`url(#cp1-${uid})`} fill={color} opacity="0.35" />
-      <ellipse cx="22" cy="42" rx="3" ry="12" fill="white" opacity="0.08" />
+      <rect x="8" y={58 + 36 - 72 * fill / 100} width="44" height={72 * fill / 100} clipPath={`url(#cp1-${uid})`} fill={color} opacity="0.4" />
+      <ellipse cx="30" cy="58" rx="22" ry="36" fill={`url(#shine1-${uid})`} />
+      <ellipse cx="22" cy="42" rx="3" ry="12" fill="white" opacity="0.06" />
     </svg>
   ),
   (color: string, fill: number, uid: string) => (
     <svg viewBox="0 0 60 100" width="60" height="100">
-      <rect x="25" y="2" width="10" height="12" rx="2" fill={color} opacity="0.4" />
-      <rect x="27" y="0" width="6" height="4" rx="1" fill={color} opacity="0.3" />
+      <defs>
+        <linearGradient id={`shine2-${uid}`} x1="0.2" y1="0" x2="0.8" y2="1"><stop offset="0%" stopColor="white" stopOpacity="0.12" /><stop offset="100%" stopColor="white" stopOpacity="0" /></linearGradient>
+        <clipPath id={`cp2-${uid}`}><path d="M18 16 Q10 50 14 90 Q16 96 30 96 Q44 96 46 90 Q50 50 42 16 Z" /></clipPath>
+      </defs>
+      <rect x="25" y="2" width="10" height="12" rx="2" fill="gold" opacity="0.5" />
+      <rect x="27" y="0" width="6" height="4" rx="1" fill="gold" opacity="0.4" />
       <path d="M18 16 Q10 50 14 90 Q16 96 30 96 Q44 96 46 90 Q50 50 42 16 Z" fill={color} opacity="0.12" stroke={color} strokeWidth="0.8" strokeOpacity="0.3" />
-      <clipPath id={`cp2-${uid}`}><path d="M18 16 Q10 50 14 90 Q16 96 30 96 Q44 96 46 90 Q50 50 42 16 Z" /></clipPath>
-      <rect x="8" y={96 - 80 * fill / 100} width="44" height={80 * fill / 100} clipPath={`url(#cp2-${uid})`} fill={color} opacity="0.35" />
-      <path d="M22 24 Q20 44 21 64" stroke="white" strokeWidth="2" fill="none" opacity="0.06" strokeLinecap="round" />
+      <rect x="8" y={96 - 80 * fill / 100} width="44" height={80 * fill / 100} clipPath={`url(#cp2-${uid})`} fill={color} opacity="0.4" />
+      <path d="M18 16 Q10 50 14 90 Q16 96 30 96 Q44 96 46 90 Q50 50 42 16 Z" fill={`url(#shine2-${uid})`} />
+      <path d="M22 24 Q20 44 21 64" stroke="white" strokeWidth="1.5" fill="none" opacity="0.06" strokeLinecap="round" />
     </svg>
   ),
   (color: string, fill: number, uid: string) => (
-    <svg viewBox="0 0 60 100" width="60" height="100">
-      <rect x="24" y="4" width="12" height="6" rx="1.5" fill={color} opacity="0.4" />
-      <circle cx="30" cy="0" r="4" fill={color} opacity="0.25" />
-      <rect x="16" y="12" width="28" height="82" rx="4" fill={color} opacity="0.12" stroke={color} strokeWidth="0.8" strokeOpacity="0.3" />
-      <clipPath id={`cp3-${uid}`}><rect x="16" y="12" width="28" height="82" rx="4" /></clipPath>
-      <rect x="16" y={12 + 82 * (1 - fill / 100)} width="28" height={82 * fill / 100} clipPath={`url(#cp3-${uid})`} fill={color} opacity="0.35" />
-      <rect x="20" y="16" width="3" height="25" rx="1.5" fill="white" opacity="0.08" />
+    <svg viewBox="0 0 70 100" width="70" height="100">
+      <defs>
+        <linearGradient id={`shine3-${uid}`} x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="white" stopOpacity="0.1" /><stop offset="100%" stopColor="white" stopOpacity="0" /></linearGradient>
+        <clipPath id={`cp3-${uid}`}><ellipse cx="35" cy="55" rx="28" ry="38" /></clipPath>
+      </defs>
+      <rect x="29" y="2" width="12" height="8" rx="2" fill="silver" opacity="0.5" />
+      <circle cx="35" cy="0" r="4" fill="silver" opacity="0.35" />
+      <ellipse cx="35" cy="55" rx="28" ry="38" fill={color} opacity="0.12" stroke={color} strokeWidth="0.8" strokeOpacity="0.3" />
+      <rect x="7" y={55 + 38 - 76 * fill / 100} width="56" height={76 * fill / 100} clipPath={`url(#cp3-${uid})`} fill={color} opacity="0.4" />
+      <ellipse cx="35" cy="55" rx="28" ry="38" fill={`url(#shine3-${uid})`} />
+      <ellipse cx="24" cy="38" rx="3" ry="14" fill="white" opacity="0.06" />
     </svg>
   ),
   (color: string, fill: number, uid: string) => (
-    <svg viewBox="0 0 60 100" width="60" height="100">
-      <rect x="23" y="2" width="14" height="8" rx="3" fill={color} opacity="0.4" />
-      <rect x="26" y="0" width="8" height="4" rx="2" fill={color} opacity="0.3" />
-      <path d="M14 12 L14 80 Q14 96 30 96 Q46 96 46 80 L46 12 Q46 12 30 14 Q14 12 14 12 Z" fill={color} opacity="0.12" stroke={color} strokeWidth="0.8" strokeOpacity="0.3" />
-      <clipPath id={`cp4-${uid}`}><path d="M14 12 L14 80 Q14 96 30 96 Q46 96 46 80 L46 12 Q46 12 30 14 Q14 12 14 12 Z" /></clipPath>
-      <rect x="14" y={96 - 84 * fill / 100} width="32" height={84 * fill / 100} clipPath={`url(#cp4-${uid})`} fill={color} opacity="0.35" />
-      <path d="M20 20 L20 50" stroke="white" strokeWidth="2" fill="none" opacity="0.06" strokeLinecap="round" />
+    <svg viewBox="0 0 70 100" width="70" height="100">
+      <defs>
+        <linearGradient id={`shine4-${uid}`} x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="white" stopOpacity="0.12" /><stop offset="100%" stopColor="white" stopOpacity="0" /></linearGradient>
+        <clipPath id={`cp4-${uid}`}><rect x="8" y="14" width="54" height="78" rx="4" /></clipPath>
+      </defs>
+      <rect x="26" y="2" width="18" height="8" rx="3" fill="gold" opacity="0.5" />
+      <rect x="30" y="0" width="10" height="4" rx="2" fill="gold" opacity="0.4" />
+      <rect x="8" y="14" width="54" height="78" rx="4" fill={color} opacity="0.12" stroke={color} strokeWidth="0.8" strokeOpacity="0.3" />
+      <rect x="8" y={14 + 78 * (1 - fill / 100)} width="54" height={78 * fill / 100} clipPath={`url(#cp4-${uid})`} fill={color} opacity="0.4" />
+      <rect x="8" y="14" width="54" height="78" rx="4" fill={`url(#shine4-${uid})`} />
+      <line x1="16" y1="22" x2="16" y2="55" stroke="white" strokeWidth="1.5" opacity="0.06" strokeLinecap="round" />
     </svg>
   ),
 ];
 
+const BOTTLE_COLOR_MAP: Record<string, string> = {
+  oriental: "#D4A052", gourmand: "#D4A052", woody: "#5B8C5A", floral: "#E8C4D8",
+  aquatic: "#5BACD9", citrus: "#FFD700", green: "#5B8C5A", fresh: "#87CEEB",
+  leather: "#8B5E3C",
+};
+
 function getBottleColor(family: string | null | undefined): string {
   if (!family) return "#9CA3AF";
-  const key = family.charAt(0).toUpperCase() + family.slice(1).toLowerCase();
-  return FAMILY_COLORS[key] || "#9CA3AF";
+  return BOTTLE_COLOR_MAP[family.toLowerCase()] || FAMILY_COLORS[family.charAt(0).toUpperCase() + family.slice(1).toLowerCase()] || "#9CA3AF";
 }
 
-function NotePyramid({ fragrance, c }: { fragrance: Fragrance; c: ReturnType<typeof useColors> }) {
-  const hasNotes = fragrance.topNotes?.length || fragrance.heartNotes?.length || fragrance.baseNotes?.length;
-  if (!hasNotes) return null;
-
-  const tierStyle = { display: "flex", flexWrap: "wrap" as const, gap: "6px", marginBottom: "10px" };
-  const labelStyle = { fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase" as const, color: c.fgDim, marginBottom: "6px" };
-  const noteChip = { padding: "3px 10px", background: c.inputBg, borderRadius: "20px", fontSize: "12px", color: c.fgSoft, lineHeight: 1.6 };
-
-  return (
-    <div style={{ marginTop: "16px" }}>
-      {fragrance.topNotes?.length ? (
-        <div><p style={labelStyle}>Top</p><div style={tierStyle}>{fragrance.topNotes.map(n => <span key={n} style={noteChip}>{n}</span>)}</div></div>
-      ) : null}
-      {fragrance.heartNotes?.length ? (
-        <div><p style={labelStyle}>Heart</p><div style={tierStyle}>{fragrance.heartNotes.map(n => <span key={n} style={noteChip}>{n}</span>)}</div></div>
-      ) : null}
-      {fragrance.baseNotes?.length ? (
-        <div><p style={labelStyle}>Base</p><div style={tierStyle}>{fragrance.baseNotes.map(n => <span key={n} style={noteChip}>{n}</span>)}</div></div>
-      ) : null}
-    </div>
-  );
+function timeAgo(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
 }
 
 function StarRating({ value, onChange, c }: { value: number; onChange: (v: number) => void; c: ReturnType<typeof useColors> }) {
@@ -137,6 +157,21 @@ function StarRating({ value, onChange, c }: { value: number; onChange: (v: numbe
           {star <= value ? "\u2605" : "\u2606"}
         </button>
       ))}
+    </div>
+  );
+}
+
+function NotePyramid({ fragrance, c }: { fragrance: Fragrance; c: ReturnType<typeof useColors> }) {
+  const hasNotes = fragrance.topNotes?.length || fragrance.heartNotes?.length || fragrance.baseNotes?.length;
+  if (!hasNotes) return null;
+  const tierStyle = { display: "flex", flexWrap: "wrap" as const, gap: "6px", marginBottom: "10px" };
+  const labelStyle = { fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase" as const, color: c.fgDim, marginBottom: "6px" };
+  const noteChip = { padding: "3px 10px", background: c.inputBg, borderRadius: "20px", fontSize: "12px", color: c.fgSoft, lineHeight: 1.6 };
+  return (
+    <div style={{ marginTop: "16px" }}>
+      {fragrance.topNotes?.length ? <div><p style={labelStyle}>Top</p><div style={tierStyle}>{fragrance.topNotes.map(n => <span key={n} style={noteChip}>{n}</span>)}</div></div> : null}
+      {fragrance.heartNotes?.length ? <div><p style={labelStyle}>Heart</p><div style={tierStyle}>{fragrance.heartNotes.map(n => <span key={n} style={noteChip}>{n}</span>)}</div></div> : null}
+      {fragrance.baseNotes?.length ? <div><p style={labelStyle}>Base</p><div style={tierStyle}>{fragrance.baseNotes.map(n => <span key={n} style={noteChip}>{n}</span>)}</div></div> : null}
     </div>
   );
 }
@@ -158,11 +193,11 @@ function FragranceDetailPanel({
             <p style={{ color: c.fgLabel, fontSize: "15px", margin: "0 0 2px" }}>{fragrance.house}</p>
             {fragrance.concentration && <p style={{ color: c.fgDim, fontSize: "13px", margin: 0 }}>{fragrance.concentration}</p>}
           </div>
-          <button data-testid="button-close-detail" onClick={onClose} style={{ background: "transparent", border: "none", color: c.fgDim, fontSize: "22px", cursor: "pointer", padding: "4px 8px", marginTop: "-4px" }}>{"\u00D7"}</button>
+          <button data-testid="button-close-detail" onClick={onClose} style={{ background: "transparent", border: "none", color: c.fgDim, fontSize: "22px", cursor: "pointer", padding: "4px 8px" }}>{"\u00D7"}</button>
         </div>
         {matchScore !== undefined && (
-          <div style={{ display: "inline-flex", alignItems: "baseline", gap: "6px", marginTop: "12px", marginBottom: "4px" }}>
-            <span style={{ fontSize: "28px", fontWeight: 300, color: matchScore >= 70 ? c.green : matchScore >= 50 ? c.fgSoft : c.fgDim }}>{matchScore}%</span>
+          <div style={{ display: "inline-flex", alignItems: "baseline", gap: "6px", marginTop: "12px" }}>
+            <span style={{ fontSize: "28px", fontWeight: 300, color: matchScore >= 70 ? c.green : c.fgSoft }}>{matchScore}%</span>
             <span style={{ fontSize: "12px", color: c.fgDim, letterSpacing: "0.15em", textTransform: "uppercase" }}>match</span>
           </div>
         )}
@@ -171,7 +206,7 @@ function FragranceDetailPanel({
             <span style={{ display: "inline-block", padding: "4px 12px", fontSize: "11px", background: c.inputBg, borderRadius: "20px", color: c.fgLabel, letterSpacing: "0.15em", textTransform: "uppercase" }}>{fragrance.family}</span>
           </div>
         )}
-        {fragrance.description && <p style={{ color: c.fgSoft, fontSize: "15px", lineHeight: 1.75, marginTop: "20px", marginBottom: "0" }}>{fragrance.description}</p>}
+        {fragrance.description && <p style={{ color: c.fgSoft, fontSize: "15px", lineHeight: 1.75, marginTop: "20px" }}>{fragrance.description}</p>}
         <NotePyramid fragrance={fragrance} c={c} />
         {!inVault && !inTry && (
           <div style={{ display: "flex", gap: "10px", marginTop: "24px", paddingTop: "20px", borderTop: `1px solid ${c.borderSoft}` }}>
@@ -193,6 +228,52 @@ function FragranceDetailPanel({
   );
 }
 
+function WearLogModal({ fragranceId, fragranceName, onClose, onSubmit, isPending, c }: {
+  fragranceId: string; fragranceName: string; onClose: () => void;
+  onSubmit: (data: { fragranceId: string; occasion?: string; notes?: string }) => void;
+  isPending: boolean; c: ReturnType<typeof useColors>;
+}) {
+  const [occasion, setOccasion] = useState("");
+  const [notes, setNotes] = useState("");
+  return (
+    <div data-testid="wear-log-overlay" onClick={onClose}
+      style={{ position: "fixed", inset: 0, background: c.overlayBg, zIndex: 60, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
+      <div data-testid="wear-log-panel" onClick={e => e.stopPropagation()}
+        style={{ width: "100%", maxWidth: "420px", background: c.panelBg, borderRadius: "12px", padding: "32px 28px", border: `1px solid ${c.borderColor}`, fontFamily: "'Cormorant', Georgia, serif", color: c.fg, animation: "slideUp 0.35s ease-out" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+          <div>
+            <p style={{ fontSize: "11px", letterSpacing: "0.25em", textTransform: "uppercase", color: c.fgDim, margin: "0 0 6px" }}>Log a Wear</p>
+            <h3 style={{ fontSize: "20px", fontWeight: 400, margin: 0 }}>{fragranceName}</h3>
+          </div>
+          <button onClick={onClose} style={{ background: "transparent", border: "none", color: c.fgDim, fontSize: "22px", cursor: "pointer" }}>{"\u00D7"}</button>
+        </div>
+        <div style={{ marginBottom: "20px" }}>
+          <p style={{ fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", color: c.fgLabel, marginBottom: "10px" }}>Occasion</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+            {WEAR_OCCASIONS.map(occ => (
+              <button key={occ} data-testid={`button-occasion-${occ.toLowerCase().replace(/\s/g, "-")}`}
+                onClick={() => setOccasion(occasion === occ ? "" : occ)}
+                style={{ padding: "7px 16px", background: occasion === occ ? c.chipActive : c.cardBg, border: `1px solid ${occasion === occ ? c.borderHard : c.chipBorder}`, borderRadius: "20px", color: occasion === occ ? c.fgMid : c.fgDim, fontSize: "12px", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif", transition: "all 0.2s ease" }}>
+                {occ}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div style={{ marginBottom: "24px" }}>
+          <p style={{ fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", color: c.fgLabel, marginBottom: "10px" }}>Notes (optional)</p>
+          <textarea data-testid="input-wear-notes" value={notes} onChange={e => setNotes(e.target.value)} placeholder="How did it wear today?" rows={2}
+            style={{ width: "100%", padding: "10px 14px", background: c.inputBg, border: `1px solid ${c.borderColor}`, borderRadius: "4px", color: c.fg, fontSize: "14px", fontFamily: "'Cormorant', Georgia, serif", outline: "none", boxSizing: "border-box", resize: "vertical", lineHeight: 1.7 }} />
+        </div>
+        <button data-testid="button-submit-wear" disabled={isPending}
+          onClick={() => onSubmit({ fragranceId, occasion: occasion || undefined, notes: notes || undefined })}
+          style={{ width: "100%", padding: "14px", background: c.chipActive, border: `1px solid ${c.borderHard}`, borderRadius: "4px", color: c.fgMid, fontSize: "13px", letterSpacing: "0.2em", textTransform: "uppercase", cursor: isPending ? "wait" : "pointer", fontFamily: "'Cormorant', Georgia, serif", opacity: isPending ? 0.5 : 1 }}>
+          {isPending ? "Logging..." : "Log Wear"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function VaultEditPanel({ item, fragrance, onClose, onSave, c }: {
   item: VaultItem; fragrance: Fragrance; onClose: () => void; onSave: (updates: any) => void; c: ReturnType<typeof useColors>;
 }) {
@@ -201,9 +282,7 @@ function VaultEditPanel({ item, fragrance, onClose, onSave, c }: {
   const [bottleSize, setBottleSize] = useState(item.bottleSize || "");
   const [fillLevel, setFillLevel] = useState(item.fillLevel || 100);
   const [wearFrequency, setWearFrequency] = useState(item.wearFrequency || "");
-
   const inputStyle = { width: "100%", padding: "10px 14px", background: c.inputBg, border: `1px solid ${c.borderColor}`, borderRadius: "4px", color: c.fg, fontSize: "14px", fontFamily: "'Cormorant', Georgia, serif", outline: "none", boxSizing: "border-box" as const };
-
   return (
     <div data-testid="vault-edit-overlay" onClick={onClose}
       style={{ position: "fixed", inset: 0, background: c.overlayBg, zIndex: 60, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
@@ -258,53 +337,7 @@ function VaultEditPanel({ item, fragrance, onClose, onSave, c }: {
           </div>
         </div>
         <button data-testid="button-save-vault-edit" onClick={() => onSave({ rating: rating || null, notes: notes || null, bottleSize: bottleSize || null, fillLevel, wearFrequency: wearFrequency || null })}
-          style={{ width: "100%", padding: "14px", background: c.chipActive, border: `1px solid ${c.borderHard}`, borderRadius: "4px", color: c.fgMid, fontSize: "13px", letterSpacing: "0.2em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif", transition: "all 0.2s ease" }}>Save</button>
-      </div>
-    </div>
-  );
-}
-
-function WearLogModal({ fragranceId, fragranceName, onClose, onSubmit, isPending, c }: {
-  fragranceId: string; fragranceName: string; onClose: () => void;
-  onSubmit: (data: { fragranceId: string; occasion?: string; notes?: string }) => void;
-  isPending: boolean; c: ReturnType<typeof useColors>;
-}) {
-  const [occasion, setOccasion] = useState("");
-  const [notes, setNotes] = useState("");
-  return (
-    <div data-testid="wear-log-overlay" onClick={onClose}
-      style={{ position: "fixed", inset: 0, background: c.overlayBg, zIndex: 60, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
-      <div data-testid="wear-log-panel" onClick={e => e.stopPropagation()}
-        style={{ width: "100%", maxWidth: "420px", background: c.panelBg, borderRadius: "12px", padding: "32px 28px", border: `1px solid ${c.borderColor}`, fontFamily: "'Cormorant', Georgia, serif", color: c.fg, animation: "slideUp 0.35s ease-out" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-          <div>
-            <p style={{ fontSize: "11px", letterSpacing: "0.25em", textTransform: "uppercase", color: c.fgDim, margin: "0 0 6px" }}>Log a Wear</p>
-            <h3 style={{ fontSize: "20px", fontWeight: 400, margin: 0 }}>{fragranceName}</h3>
-          </div>
-          <button onClick={onClose} style={{ background: "transparent", border: "none", color: c.fgDim, fontSize: "22px", cursor: "pointer" }}>{"\u00D7"}</button>
-        </div>
-        <div style={{ marginBottom: "20px" }}>
-          <p style={{ fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", color: c.fgLabel, marginBottom: "10px" }}>Occasion</p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-            {WEAR_OCCASIONS.map(occ => (
-              <button key={occ} data-testid={`button-occasion-${occ.toLowerCase().replace(/\s/g, "-")}`}
-                onClick={() => setOccasion(occasion === occ ? "" : occ)}
-                style={{ padding: "7px 16px", background: occasion === occ ? c.chipActive : c.cardBg, border: `1px solid ${occasion === occ ? c.borderHard : c.chipBorder}`, borderRadius: "20px", color: occasion === occ ? c.fgMid : c.fgDim, fontSize: "12px", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif", transition: "all 0.2s ease" }}>
-                {occ}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div style={{ marginBottom: "24px" }}>
-          <p style={{ fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", color: c.fgLabel, marginBottom: "10px" }}>Notes (optional)</p>
-          <textarea data-testid="input-wear-notes" value={notes} onChange={e => setNotes(e.target.value)} placeholder="How did it wear today?" rows={2}
-            style={{ width: "100%", padding: "10px 14px", background: c.inputBg, border: `1px solid ${c.borderColor}`, borderRadius: "4px", color: c.fg, fontSize: "14px", fontFamily: "'Cormorant', Georgia, serif", outline: "none", boxSizing: "border-box", resize: "vertical", lineHeight: 1.7 }} />
-        </div>
-        <button data-testid="button-submit-wear" disabled={isPending}
-          onClick={() => onSubmit({ fragranceId, occasion: occasion || undefined, notes: notes || undefined })}
-          style={{ width: "100%", padding: "14px", background: c.chipActive, border: `1px solid ${c.borderHard}`, borderRadius: "4px", color: c.fgMid, fontSize: "13px", letterSpacing: "0.2em", textTransform: "uppercase", cursor: isPending ? "wait" : "pointer", fontFamily: "'Cormorant', Georgia, serif", opacity: isPending ? 0.5 : 1 }}>
-          {isPending ? "Logging..." : "Log Wear"}
-        </button>
+          style={{ width: "100%", padding: "14px", background: c.chipActive, border: `1px solid ${c.borderHard}`, borderRadius: "4px", color: c.fgMid, fontSize: "13px", letterSpacing: "0.2em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif" }}>Save</button>
       </div>
     </div>
   );
@@ -320,49 +353,46 @@ function GlassShelfVault({ items, onEdit, onDetail, onRemove, onAdd, onLogWear, 
   c: ReturnType<typeof useColors>;
 }) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const maxSlots = Math.max(items.length + 1, 4);
-  const shelvesNeeded = Math.ceil(maxSlots / 4);
-
-  const allSlots: (typeof items[0] | null)[] = [];
-  for (let s = 0; s < shelvesNeeded; s++) {
-    for (let i = 0; i < 4; i++) {
-      const idx = s * 4 + i;
-      allSlots.push(idx < items.length ? items[idx] : null);
-    }
-  }
+  const slotsPerShelf = 5;
+  const shelvesNeeded = Math.max(Math.ceil((items.length + 1) / slotsPerShelf), 1);
 
   return (
-    <div data-testid="tab-content-vault" style={{ animation: "fadeUp 0.5s ease-out" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "28px" }}>
-        <div>
-          <p style={{ fontSize: "13px", fontWeight: 400, letterSpacing: "0.2em", textTransform: "uppercase", color: c.fgLabel, margin: "0 0 6px" }}>My Vault</p>
-          <p style={{ color: c.fgMuted, fontSize: "13px", margin: 0 }}>{items.length} {items.length === 1 ? "fragrance" : "fragrances"}</p>
-        </div>
-        <button data-testid="button-add-to-vault" onClick={onAdd}
-          style={{ padding: "8px 18px", background: c.chipActive, border: `1px solid ${c.borderColor}`, borderRadius: "4px", color: c.fgMid, fontSize: "11px", letterSpacing: "0.18em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif" }}>+ Add</button>
+    <div data-testid="glass-shelf-vault" style={{ position: "relative", padding: "16px 0" }}>
+      <div className="bokeh-container" style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
+        {[...Array(6)].map((_, i) => (
+          <div key={i} style={{
+            position: "absolute", width: `${3 + i * 2}px`, height: `${3 + i * 2}px`, borderRadius: "50%",
+            background: c.isDark ? `rgba(255,255,255,${0.02 + i * 0.005})` : `rgba(200,180,140,${0.04 + i * 0.01})`,
+            left: `${10 + i * 16}%`, top: `${10 + (i % 3) * 25}%`,
+            animation: `bokehDrift ${6 + i * 2}s ease-in-out infinite alternate`,
+          }} />
+        ))}
       </div>
 
       {Array.from({ length: shelvesNeeded }).map((_, shelfIdx) => {
-        const shelfItems = allSlots.slice(shelfIdx * 4, shelfIdx * 4 + 4);
+        const shelfItems: (typeof items[0] | null)[] = [];
+        for (let i = 0; i < slotsPerShelf; i++) {
+          const idx = shelfIdx * slotsPerShelf + i;
+          shelfItems.push(idx < items.length ? items[idx] : null);
+        }
         return (
-          <div key={shelfIdx} style={{ marginBottom: "16px" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", padding: "20px 8px 28px", position: "relative" }}>
+          <div key={shelfIdx} style={{ marginBottom: "8px" }}>
+            <div style={{ display: "flex", justifyContent: "center", gap: "8px", padding: "20px 8px 24px", position: "relative" }}>
               {shelfItems.map((slot, i) => {
-                const globalIdx = shelfIdx * 4 + i;
+                const globalIdx = shelfIdx * slotsPerShelf + i;
                 if (!slot) {
                   if (globalIdx === items.length) {
                     return (
                       <div key={`empty-${globalIdx}`} data-testid="button-vault-add-slot"
                         onClick={onAdd}
-                        style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "120px", cursor: "pointer", borderRadius: "8px", border: `1px dashed ${c.borderColor}`, transition: "border-color 0.2s" }}
+                        style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "70px", minHeight: "130px", cursor: "pointer", border: `1px dashed ${c.borderColor}`, borderRadius: "8px", transition: "border-color 0.2s" }}
                         onMouseEnter={e => (e.currentTarget.style.borderColor = c.borderHard)}
                         onMouseLeave={e => (e.currentTarget.style.borderColor = c.borderColor)}>
-                        <span style={{ fontSize: "28px", color: c.fgMuted, lineHeight: 1 }}>+</span>
-                        <span style={{ fontSize: "10px", color: c.fgMuted, letterSpacing: "0.1em", marginTop: "6px" }}>ADD</span>
+                        <span style={{ fontSize: "24px", color: c.fgMuted }}>+</span>
                       </div>
                     );
                   }
-                  return <div key={`empty-${globalIdx}`} style={{ minHeight: "120px" }} />;
+                  return <div key={`empty-${globalIdx}`} style={{ width: "70px" }} />;
                 }
                 const item = slot;
                 const bottleColor = getBottleColor(item.fragrance?.family);
@@ -375,64 +405,79 @@ function GlassShelfVault({ items, onEdit, onDetail, onRemove, onAdd, onLogWear, 
                     onClick={() => onEdit(item)}
                     style={{
                       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end",
-                      minHeight: "120px", cursor: "pointer", position: "relative",
-                      transform: isHovered ? "translateY(-8px)" : "translateY(0)",
+                      width: "70px", minHeight: "130px", cursor: "pointer", position: "relative",
+                      transform: isHovered ? "translateY(-10px) scale(1.05)" : "translateY(0) scale(1)",
                       transition: "transform 0.3s cubic-bezier(0.25,0.1,0.25,1)",
                     }}>
-                    <div style={{ filter: isHovered ? `drop-shadow(0 4px 12px ${bottleColor}40)` : "none", transition: "filter 0.3s ease" }}>
+                    <div style={{
+                      filter: isHovered ? `drop-shadow(0 4px 16px ${bottleColor}50)` : "none",
+                      transition: "filter 0.3s ease",
+                    }}>
                       {BOTTLE_SHAPES[shapeIdx](bottleColor, item.fillLevel ?? 100, item.id)}
                     </div>
                     {isHovered && (
                       <div style={{
-                        position: "absolute", bottom: "100%", left: "50%", transform: "translateX(-50%)",
-                        background: c.panelBg, border: `1px solid ${c.borderColor}`, borderRadius: "8px",
-                        padding: "10px 14px", whiteSpace: "nowrap", zIndex: 10,
+                        position: "absolute", width: "40px", height: "4px", bottom: "20px",
+                        borderRadius: "50%", background: `${c.gold}`,
+                        filter: `blur(4px)`, opacity: 0.6,
+                      }} />
+                    )}
+                    {isHovered && (
+                      <div style={{
+                        position: "absolute", bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)",
+                        background: c.panelBg, border: `1px solid ${c.borderColor}`, borderRadius: "10px",
+                        padding: "12px 16px", whiteSpace: "nowrap", zIndex: 20,
                         boxShadow: c.isDark ? "0 8px 32px rgba(0,0,0,0.6)" : "0 8px 32px rgba(0,0,0,0.12)",
-                        animation: "fadeUp 0.2s ease-out", minWidth: "120px", textAlign: "center",
+                        animation: "fadeUp 0.2s ease-out", minWidth: "140px", textAlign: "center",
                       }}>
                         <p style={{ fontSize: "14px", fontWeight: 500, margin: "0 0 3px", color: c.fg }}>{item.fragrance?.name}</p>
                         <p style={{ fontSize: "11px", color: c.fgLabel, margin: "0 0 6px" }}>{item.fragrance?.house}</p>
-                        <div style={{ display: "flex", gap: "8px", justifyContent: "center", alignItems: "center", flexWrap: "wrap" }}>
-                          {item.fillLevel !== null && item.fillLevel !== undefined && (
-                            <span style={{ fontSize: "10px", color: c.fgDim }}>{item.fillLevel}% full</span>
-                          )}
+                        <div style={{ display: "flex", gap: "8px", justifyContent: "center", alignItems: "center", flexWrap: "wrap", marginBottom: "8px" }}>
+                          {item.fillLevel != null && <span style={{ fontSize: "10px", color: c.fgDim }}>{item.fillLevel}% full</span>}
                           {item.matchScore ? <span style={{ fontSize: "10px", color: c.greenDim }}>{Math.round(item.matchScore)}% match</span> : null}
                         </div>
-                        <div style={{ display: "flex", gap: "6px", marginTop: "8px", justifyContent: "center", flexWrap: "wrap" }}>
+                        <div style={{ display: "flex", gap: "6px", justifyContent: "center", flexWrap: "wrap" }}>
                           <button data-testid={`button-vault-wear-${item.id}`}
                             onClick={e => { e.stopPropagation(); onLogWear(item.fragranceId); }}
-                            style={{ padding: "3px 10px", background: c.chipActive, border: `1px solid ${c.borderColor}`, borderRadius: "12px", fontSize: "10px", color: c.fgMid, cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif", letterSpacing: "0.08em" }}>
+                            style={{ padding: "3px 10px", background: c.chipActive, border: `1px solid ${c.borderColor}`, borderRadius: "12px", fontSize: "10px", color: c.fgMid, cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif" }}>
                             Log Wear
                           </button>
                           <button data-testid={`button-details-vault-${item.id}`}
                             onClick={e => { e.stopPropagation(); if (item.fragrance) onDetail(item.fragrance); }}
-                            style={{ padding: "3px 10px", background: "transparent", border: `1px solid ${c.chipBorder}`, borderRadius: "12px", fontSize: "10px", color: c.fgDim, cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif", letterSpacing: "0.08em" }}>
+                            style={{ padding: "3px 10px", background: "transparent", border: `1px solid ${c.chipBorder}`, borderRadius: "12px", fontSize: "10px", color: c.fgDim, cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif" }}>
                             Details
                           </button>
                           <button data-testid={`button-remove-vault-${item.id}`}
                             onClick={e => { e.stopPropagation(); onRemove(item.id); }}
-                            style={{ padding: "3px 10px", background: "transparent", border: `1px solid ${c.chipBorder}`, borderRadius: "12px", fontSize: "10px", color: "rgba(200,80,80,0.5)", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif", letterSpacing: "0.08em" }}>
+                            style={{ padding: "3px 10px", background: "transparent", border: `1px solid ${c.chipBorder}`, borderRadius: "12px", fontSize: "10px", color: "rgba(200,80,80,0.5)", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif" }}>
                             Remove
                           </button>
                         </div>
                       </div>
                     )}
-                    <p style={{ fontSize: "11px", color: c.fgLabel, margin: "6px 0 0", textAlign: "center", maxWidth: "80px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <p style={{ fontSize: "10px", color: c.fgLabel, margin: "4px 0 0", textAlign: "center", maxWidth: "68px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {item.fragrance?.name}
                     </p>
-                    {item.rating ? (
-                      <span style={{ fontSize: "10px", color: c.goldDim }}>{"\u2605".repeat(item.rating)}</span>
-                    ) : null}
+                    {item.rating ? <span style={{ fontSize: "9px", color: c.goldDim }}>{"\u2605".repeat(item.rating)}</span> : null}
+                    <div style={{
+                      position: "absolute", bottom: "-2px", width: "50px", height: "6px",
+                      background: c.isDark ? `radial-gradient(ellipse, rgba(0,0,0,0.4) 0%, transparent 70%)` : `radial-gradient(ellipse, rgba(0,0,0,0.08) 0%, transparent 70%)`,
+                      borderRadius: "50%",
+                    }} />
                   </div>
                 );
               })}
             </div>
             <div style={{
               height: "3px",
-              background: `linear-gradient(90deg, transparent 0%, ${c.shelfGlow} 20%, ${c.shelfGlow} 80%, transparent 100%)`,
+              background: `linear-gradient(90deg, transparent 0%, ${c.shelfGlow} 15%, ${c.shelfGlow} 85%, transparent 100%)`,
               borderRadius: "2px",
-              boxShadow: c.isDark ? `0 2px 16px ${c.shelfGlow}, 0 0 40px ${c.shelfGlow}` : `0 1px 8px ${c.shelfGlow}`,
-              borderTop: `1px solid ${c.shelfBorder}`,
+              boxShadow: c.isDark
+                ? `0 2px 20px rgba(212,175,55,0.1), 0 0 40px rgba(212,175,55,0.05)`
+                : `0 1px 12px ${c.shelfGlow}`,
+              borderTop: `1px solid ${c.isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"}`,
+              borderBottom: `1px solid ${c.isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)"}`,
+              margin: "0 16px",
             }} />
           </div>
         );
@@ -441,8 +486,742 @@ function GlassShelfVault({ items, onEdit, onDetail, onRemove, onAdd, onLogWear, 
   );
 }
 
+function ScentLogTab({ userId, vaultItems: vitems, c }: { userId: string; vaultItems: (VaultItem & { fragrance: Fragrance })[]; c: ReturnType<typeof useColors> }) {
+  const [showQuickLog, setShowQuickLog] = useState(false);
+  const [selectedFrag, setSelectedFrag] = useState<string | null>(null);
+  const [logMood, setLogMood] = useState("");
+  const [logNote, setLogNote] = useState("");
+
+  const { data: wearLogs = [] } = useQuery<WearLogData[]>({
+    queryKey: ["/api/users", userId, "wear-logs"],
+    queryFn: async () => { const res = await fetch(`/api/users/${userId}/wear-logs`); return res.json(); },
+  });
+
+  const logWear = useMutation({
+    mutationFn: async (data: { fragranceId: string; occasion?: string; notes?: string }) => {
+      const res = await apiRequest("POST", `/api/users/${userId}/wear-logs`, data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users", userId, "wear-logs"] });
+      setShowQuickLog(false); setSelectedFrag(null); setLogMood(""); setLogNote("");
+    },
+  });
+
+  const moodIcons: Record<string, string> = {
+    "Date Night": "\u2764", "Work": "\u25CB", "Travel": "\u2708",
+    "Daily": "\u2606", "Casual": "\u223C", "Special Event": "\u2605",
+  };
+
+  return (
+    <div data-testid="tab-content-log" style={{ animation: "fadeUp 0.5s ease-out" }}>
+      <button data-testid="button-log-today"
+        onClick={() => setShowQuickLog(!showQuickLog)}
+        style={{
+          width: "100%", padding: "16px", marginBottom: "24px",
+          background: `linear-gradient(135deg, ${c.cardBg}, ${c.violet}08)`,
+          border: `1px solid ${c.violetDim}30`, borderRadius: "12px",
+          color: c.fgMid, fontSize: "14px", cursor: "pointer",
+          fontFamily: "'Cormorant', Georgia, serif", letterSpacing: "0.1em",
+          transition: "all 0.2s",
+        }}>
+        Log today's scent
+      </button>
+
+      {showQuickLog && (
+        <div style={{ marginBottom: "28px", padding: "20px", background: c.cardBg, borderRadius: "12px", border: `1px solid ${c.borderColor}`, animation: "slideUp 0.3s ease-out" }}>
+          <p style={{ fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", color: c.fgLabel, marginBottom: "12px" }}>Select a bottle</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(60px, 1fr))", gap: "8px", marginBottom: "16px" }}>
+            {vitems.map(v => (
+              <div key={v.id} data-testid={`button-quicklog-${v.id}`}
+                onClick={() => setSelectedFrag(v.fragranceId)}
+                style={{
+                  padding: "8px 4px", textAlign: "center", borderRadius: "8px", cursor: "pointer",
+                  background: selectedFrag === v.fragranceId ? c.chipActive : "transparent",
+                  border: `1px solid ${selectedFrag === v.fragranceId ? c.borderHard : c.chipBorder}`,
+                  transition: "all 0.2s",
+                }}>
+                <div style={{ margin: "0 auto", width: "30px" }}>
+                  {BOTTLE_SHAPES[vitems.indexOf(v) % 5](getBottleColor(v.fragrance?.family), v.fillLevel ?? 100, `ql-${v.id}`)}
+                </div>
+                <p style={{ fontSize: "8px", color: c.fgDim, margin: "4px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.fragrance?.name?.split(" ")[0]}</p>
+              </div>
+            ))}
+          </div>
+          {selectedFrag && (
+            <>
+              <p style={{ fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", color: c.fgLabel, marginBottom: "8px" }}>Mood</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "12px" }}>
+                {WEAR_OCCASIONS.map(occ => (
+                  <button key={occ} onClick={() => setLogMood(logMood === occ ? "" : occ)}
+                    style={{ padding: "5px 12px", background: logMood === occ ? c.chipActive : "transparent", border: `1px solid ${logMood === occ ? c.borderHard : c.chipBorder}`, borderRadius: "20px", color: logMood === occ ? c.fgMid : c.fgDim, fontSize: "11px", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif" }}>
+                    {occ}
+                  </button>
+                ))}
+              </div>
+              <input type="text" placeholder="Add a note (optional)" value={logNote} onChange={e => setLogNote(e.target.value)}
+                style={{ width: "100%", padding: "10px 14px", background: c.inputBg, border: `1px solid ${c.borderColor}`, borderRadius: "6px", color: c.fg, fontSize: "14px", fontFamily: "'Cormorant', Georgia, serif", outline: "none", boxSizing: "border-box", marginBottom: "12px" }} />
+              <button data-testid="button-quicklog-submit"
+                onClick={() => logWear.mutate({ fragranceId: selectedFrag, occasion: logMood || undefined, notes: logNote || undefined })}
+                disabled={logWear.isPending}
+                style={{ width: "100%", padding: "12px", background: c.chipActive, border: `1px solid ${c.borderHard}`, borderRadius: "6px", color: c.fgMid, fontSize: "12px", letterSpacing: "0.15em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif" }}>
+                {logWear.isPending ? "..." : "Log Wear"}
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+        {wearLogs.length === 0 ? (
+          <p style={{ color: c.fgDim, textAlign: "center", padding: "40px 0" }}>No wear logs yet. Start logging your scents!</p>
+        ) : wearLogs.map((log, idx) => {
+          const fragName = log.fragrance?.name || "Unknown";
+          const dateStr = new Date(log.wornAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+          const timeStr = new Date(log.wornAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+          return (
+            <div key={log.id} data-testid={`card-wearlog-${log.id}`}
+              style={{
+                display: "flex", gap: "14px", padding: "14px 0",
+                borderBottom: idx < wearLogs.length - 1 ? `1px solid ${c.borderSoft}` : "none",
+                alignItems: "flex-start",
+              }}>
+              <div style={{ width: "28px", flexShrink: 0, paddingTop: "2px" }}>
+                {BOTTLE_SHAPES[idx % 5](getBottleColor(log.fragrance?.family), 80, `wl-${log.id}`)}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px" }}>
+                  <span style={{ fontSize: "15px", fontWeight: 400, color: c.fg }}>{fragName}</span>
+                  {log.occasion && (
+                    <span style={{ fontSize: "10px", padding: "2px 8px", background: c.chipActive, borderRadius: "10px", color: c.fgSoft }}>
+                      {moodIcons[log.occasion] || ""} {log.occasion}
+                    </span>
+                  )}
+                </div>
+                {log.notes && <p style={{ fontSize: "13px", color: c.fgSoft, margin: "3px 0 0", lineHeight: 1.5 }}>{log.notes}</p>}
+              </div>
+              <div style={{ textAlign: "right", flexShrink: 0 }}>
+                <p style={{ fontSize: "12px", color: c.fgDim, margin: 0 }}>{dateStr}</p>
+                <p style={{ fontSize: "11px", color: c.fgMuted, margin: "2px 0 0" }}>{timeStr}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ToTryTab({ userId, vaultFragIds, toTryItems: items, onDetail, c }: {
+  userId: string; vaultFragIds: Set<string>;
+  toTryItems: (ToTryItem & { fragrance: Fragrance })[];
+  onDetail: (frag: Fragrance, matchScore?: number) => void;
+  c: ReturnType<typeof useColors>;
+}) {
+  const archetype = getStoredUser()?.archetypeId ? ARCHETYPES[getStoredUser()!.archetypeId as ArchetypeId] : null;
+
+  const addToVault = useMutation({
+    mutationFn: async (fragranceId: string) => { const res = await apiRequest("POST", `/api/users/${userId}/vault`, { fragranceId }); return res.json(); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/users", userId, "vault"] }); queryClient.invalidateQueries({ queryKey: ["/api/users", userId, "to-try"] }); },
+  });
+  const removeFromToTry = useMutation({
+    mutationFn: async (id: string) => { await apiRequest("DELETE", `/api/to-try/${id}`); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/users", userId, "to-try"] }); },
+  });
+  const updatePriority = useMutation({
+    mutationFn: async ({ id, priority }: { id: string; priority: string }) => { await apiRequest("PATCH", `/api/to-try/${id}`, { priority }); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/users", userId, "to-try"] }); },
+  });
+
+  const aiRecs = items.filter(i => i.matchScore && i.matchScore >= 85).slice(0, 3);
+  const userSaved = items.filter(i => !aiRecs.find(r => r.id === i.id));
+
+  const priorityBadge = (p: string | null) => {
+    const colors: Record<string, { bg: string; fg: string }> = {
+      high: { bg: "rgba(212,175,55,0.15)", fg: c.gold },
+      curious: { bg: `${c.violet}15`, fg: c.violet },
+      someday: { bg: c.chipActive, fg: c.fgDim },
+    };
+    const labels: Record<string, string> = { high: "High Priority", curious: "Curious", someday: "Someday" };
+    const s = colors[p || "curious"] || colors.curious;
+    return (
+      <span style={{ fontSize: "10px", padding: "2px 8px", background: s.bg, borderRadius: "10px", color: s.fg, letterSpacing: "0.06em" }}>
+        {labels[p || "curious"] || "Curious"}
+      </span>
+    );
+  };
+
+  const renderCard = (item: ToTryItem & { fragrance: Fragrance }) => (
+    <div key={item.id} data-testid={`card-try-${item.id}`}
+      onClick={() => item.fragrance && onDetail(item.fragrance, item.matchScore ?? undefined)}
+      style={{ background: c.cardBg, border: `1px solid ${c.borderColor}`, borderRadius: "10px", padding: "16px 18px", cursor: "pointer", transition: "border-color 0.2s" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+            <p style={{ fontSize: "17px", margin: 0, fontWeight: 400 }}>{item.fragrance?.name}</p>
+            {priorityBadge(item.priority)}
+          </div>
+          <p style={{ color: c.fgLabel, fontSize: "13px", margin: "0 0 8px" }}>{item.fragrance?.house}</p>
+          {item.fragrance?.family && (
+            <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+              <span style={{ fontSize: "10px", padding: "2px 8px", background: c.inputBg, borderRadius: "10px", color: c.fgDim }}>{item.fragrance.family}</span>
+            </div>
+          )}
+        </div>
+        <div style={{ textAlign: "center", flexShrink: 0 }}>
+          {item.matchScore && (
+            <div style={{ position: "relative", width: "44px", height: "44px" }}>
+              <svg viewBox="0 0 44 44" width="44" height="44">
+                <circle cx="22" cy="22" r="18" fill="none" stroke={c.borderColor} strokeWidth="2" />
+                <circle cx="22" cy="22" r="18" fill="none" stroke={c.green} strokeWidth="2"
+                  strokeDasharray={`${(item.matchScore / 100) * 113.1} 113.1`}
+                  transform="rotate(-90 22 22)" strokeLinecap="round" />
+              </svg>
+              <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 500, color: c.fg }}>{Math.round(item.matchScore)}%</span>
+            </div>
+          )}
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: "8px", marginTop: "10px", alignItems: "center" }}>
+        {!vaultFragIds.has(item.fragranceId) && (
+          <button data-testid={`button-try-to-vault-${item.id}`} onClick={e => { e.stopPropagation(); addToVault.mutate(item.fragranceId); removeFromToTry.mutate(item.id); }}
+            style={{ padding: "5px 12px", background: c.chipActive, border: `1px solid ${c.borderColor}`, borderRadius: "20px", color: c.fgMid, fontSize: "11px", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif" }}>Own it</button>
+        )}
+        <div style={{ display: "flex", gap: "4px", marginLeft: "auto" }}>
+          {["high", "curious", "someday"].map(p => (
+            <button key={p} onClick={e => { e.stopPropagation(); updatePriority.mutate({ id: item.id, priority: p }); }}
+              style={{
+                padding: "3px 8px", borderRadius: "10px", fontSize: "9px", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif",
+                textTransform: "uppercase", letterSpacing: "0.08em",
+                background: item.priority === p ? c.chipActive : "transparent",
+                border: `1px solid ${item.priority === p ? c.borderHard : c.chipBorder}`,
+                color: item.priority === p ? c.fgMid : c.fgMuted,
+              }}>{p === "high" ? "High" : p === "curious" ? "Curious" : "Someday"}</button>
+          ))}
+        </div>
+        <button data-testid={`button-remove-try-${item.id}`} onClick={e => { e.stopPropagation(); removeFromToTry.mutate(item.id); }}
+          style={{ background: "transparent", border: "none", color: c.fgMuted, fontSize: "16px", cursor: "pointer", padding: "2px" }}>{"\u00D7"}</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div data-testid="tab-content-totry" style={{ animation: "fadeUp 0.5s ease-out" }}>
+      {archetype && aiRecs.length > 0 && (
+        <>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
+            <span style={{ fontSize: "13px", color: c.gold, letterSpacing: "0.06em" }}>Recommended for {archetype.name}</span>
+            <span style={{ fontSize: "14px" }}>*</span>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "28px" }}>
+            {aiRecs.map(renderCard)}
+          </div>
+        </>
+      )}
+      {userSaved.length > 0 && (
+        <>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+            <span style={{ fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", color: c.fgLabel }}>Your Saved</span>
+            <div style={{ flex: 1, height: "1px", background: c.borderSoft }} />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {userSaved.map(renderCard)}
+          </div>
+        </>
+      )}
+      {items.length === 0 && (
+        <div style={{ textAlign: "center", padding: "60px 24px" }}>
+          <p style={{ color: c.fgDim, fontSize: "16px", marginBottom: "8px" }}>Nothing on your list yet</p>
+          <p style={{ color: c.fgMuted, fontSize: "14px" }}>Discover fragrances and add them to your wishlist.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FeedTab({ userId, c }: { userId: string; c: ReturnType<typeof useColors> }) {
+  const [showPostModal, setShowPostModal] = useState(false);
+  const [postContent, setPostContent] = useState("");
+  const [postType, setPostType] = useState<"review" | "recommendation">("review");
+  const [selectedFragranceId, setSelectedFragranceId] = useState("");
+  const [postRating, setPostRating] = useState(0);
+
+  const { data: posts = [] } = useQuery<FeedPostData[]>({
+    queryKey: ["/api/feed"],
+    queryFn: async () => { const res = await fetch(`/api/feed?userId=${userId}`); return res.json(); },
+  });
+
+  const { data: allFragrances = [] } = useQuery<Fragrance[]>({
+    queryKey: ["/api/fragrances"],
+  });
+
+  const { data: toTryItems = [] } = useQuery<(ToTryItem & { fragrance: Fragrance })[]>({
+    queryKey: ["/api/users", userId, "to-try"],
+    queryFn: async () => { const res = await fetch(`/api/users/${userId}/to-try`); return res.json(); },
+  });
+
+  const toTryFragIds = new Set(toTryItems.map(t => t.fragranceId));
+
+  const likeMutation = useMutation({
+    mutationFn: async (postId: string) => { return apiRequest("POST", `/api/feed/${postId}/like`, { userId }); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/feed"] }); },
+  });
+  const createPost = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/feed", { userId, type: postType, content: postContent, fragranceId: selectedFragranceId || undefined, rating: postRating || undefined });
+    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/feed"] }); setShowPostModal(false); setPostContent(""); setSelectedFragranceId(""); setPostRating(0); },
+  });
+  const deletePost = useMutation({
+    mutationFn: async (postId: string) => { return apiRequest("DELETE", `/api/feed/${postId}`); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/feed"] }); },
+  });
+
+  const postTypeIcons: Record<string, string> = {
+    review: "Review", recommendation: "Rec", wear_log: "Wear",
+    bottle_shot: "Photo", tiktok_embed: "TikTok", layering_stack: "Layer",
+  };
+
+  const sampleCreators = new Set(["scentedbylayla", "fragrancebydan"]);
+
+  return (
+    <div data-testid="tab-content-feed" style={{ animation: "fadeUp 0.5s ease-out" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+        <h2 style={{ fontSize: "22px", fontWeight: 300, margin: 0 }}>Feed</h2>
+        <button data-testid="button-create-post" onClick={() => setShowPostModal(true)}
+          style={{ padding: "8px 16px", background: c.chipActive, border: `1px solid ${c.borderColor}`, borderRadius: "20px", color: c.fgMid, fontSize: "12px", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif", letterSpacing: "0.1em" }}>
+          Share
+        </button>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        {posts.map(post => {
+          const postArch = post.user?.archetypeId ? ARCHETYPES[post.user.archetypeId as ArchetypeId] : null;
+          const isCreator = sampleCreators.has(post.user?.username || "");
+          const inToTry = post.fragranceId && toTryFragIds.has(post.fragranceId);
+          return (
+            <div key={post.id} data-testid={`card-post-${post.id}`}
+              style={{ background: c.cardBg, border: `1px solid ${c.borderColor}`, borderRadius: "10px", padding: "18px 20px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
+                <div style={{
+                  width: "40px", height: "40px", borderRadius: "50%",
+                  background: postArch ? `linear-gradient(135deg, ${postArch.color}40, ${postArch.color}20)` : c.cardBg,
+                  border: `1px solid ${c.borderColor}`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: "18px", fontFamily: "'Pinyon Script', cursive",
+                  color: postArch ? postArch.color : c.fg, flexShrink: 0,
+                }}>
+                  {(post.user?.displayName || post.user?.username || "?").charAt(0).toUpperCase()}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                    <span style={{ fontSize: "14px", color: c.fg }}>@{post.user?.username}</span>
+                    {isCreator && <span style={{ fontSize: "10px", color: c.gold }}>CREATOR *</span>}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "2px" }}>
+                    {postArch && (
+                      <span style={{ fontSize: "10px", color: postArch.color, display: "flex", alignItems: "center", gap: "4px" }}>
+                        {postArch.name}
+                        <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: postArch.color, display: "inline-block" }} />
+                      </span>
+                    )}
+                    <span style={{ fontSize: "11px", color: c.fgMuted }}>{timeAgo(post.createdAt)}</span>
+                  </div>
+                </div>
+                {post.userId === userId && (
+                  <button data-testid={`button-delete-post-${post.id}`} onClick={() => deletePost.mutate(post.id)}
+                    style={{ background: "none", border: "none", color: c.fgMuted, cursor: "pointer", fontSize: "16px", padding: "4px" }}>{"\u00D7"}</button>
+                )}
+              </div>
+
+              {post.rating && (
+                <p style={{ fontSize: "14px", color: c.gold, margin: "0 0 8px" }}>
+                  {"\u2605".repeat(post.rating)}<span style={{ color: c.fgMuted }}>{"\u2606".repeat(5 - post.rating)}</span>
+                </p>
+              )}
+
+              {post.content && (
+                <p style={{ fontSize: "15px", lineHeight: 1.7, margin: "0 0 12px", color: c.fgStrong }}>{post.content}</p>
+              )}
+
+              {post.fragrance && (
+                <div style={{ padding: "10px 14px", background: c.isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)", border: `1px solid ${c.borderColor}`, borderRadius: "8px", marginBottom: "12px" }}>
+                  <p style={{ fontSize: "14px", margin: "0 0 2px", fontWeight: 400 }}>{post.fragrance.name}</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <p style={{ fontSize: "12px", color: c.fgSoft, margin: 0 }}>{post.fragrance.house}</p>
+                    {post.fragrance.family && (
+                      <span style={{ fontSize: "9px", padding: "1px 6px", background: c.inputBg, borderRadius: "8px", color: c.fgDim }}>{post.fragrance.family}</span>
+                    )}
+                  </div>
+                  {inToTry && <span style={{ fontSize: "10px", color: c.greenDim, marginTop: "4px", display: "inline-block" }}>In your To-Try</span>}
+                </div>
+              )}
+
+              <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+                <button data-testid={`button-like-post-${post.id}`}
+                  onClick={() => likeMutation.mutate(post.id)}
+                  style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", color: post.liked ? c.gold : c.fgMuted, fontSize: "13px", padding: "4px 0", fontFamily: "inherit", transition: "color 0.2s" }}>
+                  <span style={{ fontSize: "15px" }}>{post.liked ? "\u2665" : "\u2661"}</span>
+                  {post.likeCount > 0 && <span>{post.likeCount}</span>}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {showPostModal && (
+        <div style={{ position: "fixed", inset: 0, background: c.overlayBg, display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 100 }}
+          onClick={e => { if (e.target === e.currentTarget) setShowPostModal(false); }}>
+          <div style={{ width: "100%", maxWidth: "600px", background: c.panelBg, borderRadius: "16px 16px 0 0", padding: "28px 24px 40px", animation: "slideUp 0.3s ease-out" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <h3 style={{ fontSize: "18px", fontWeight: 300, margin: 0 }}>Share</h3>
+              <button onClick={() => setShowPostModal(false)} style={{ background: "none", border: "none", color: c.fgSoft, cursor: "pointer", fontSize: "20px" }}>{"\u00D7"}</button>
+            </div>
+            <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
+              {(["review", "recommendation"] as const).map(t => (
+                <button key={t} data-testid={`button-post-type-${t}`} onClick={() => setPostType(t)}
+                  style={{ padding: "6px 16px", borderRadius: "20px", background: postType === t ? c.chipActive : "transparent", border: `1px solid ${postType === t ? c.borderHard : c.borderColor}`, color: c.fg, cursor: "pointer", fontSize: "13px", fontFamily: "inherit", textTransform: "capitalize" }}>
+                  {t}
+                </button>
+              ))}
+            </div>
+            <select data-testid="select-post-fragrance" value={selectedFragranceId} onChange={e => setSelectedFragranceId(e.target.value)}
+              style={{ width: "100%", padding: "10px 12px", marginBottom: "12px", background: c.inputBg, border: `1px solid ${c.borderColor}`, borderRadius: "6px", color: c.fg, fontSize: "14px", fontFamily: "inherit" }}>
+              <option value="">Select a fragrance (optional)</option>
+              {allFragrances.map(f => <option key={f.id} value={f.id}>{f.name} - {f.house}</option>)}
+            </select>
+            <textarea data-testid="input-post-content" value={postContent} onChange={e => setPostContent(e.target.value)} placeholder="Share your thoughts..."
+              style={{ width: "100%", minHeight: "100px", padding: "12px", background: c.inputBg, border: `1px solid ${c.borderColor}`, borderRadius: "6px", color: c.fg, fontSize: "15px", fontFamily: "inherit", resize: "vertical", lineHeight: 1.6, boxSizing: "border-box" }} />
+            {postType === "review" && (
+              <div style={{ display: "flex", gap: "6px", margin: "12px 0" }}>
+                {[1, 2, 3, 4, 5].map(star => (
+                  <button key={star} data-testid={`button-post-star-${star}`} onClick={() => setPostRating(star === postRating ? 0 : star)}
+                    style={{ background: "none", border: "none", cursor: "pointer", fontSize: "20px", padding: "2px", color: star <= postRating ? c.gold : c.fgMuted }}>
+                    {star <= postRating ? "\u2605" : "\u2606"}
+                  </button>
+                ))}
+              </div>
+            )}
+            <button data-testid="button-submit-post" onClick={() => createPost.mutate()} disabled={!postContent.trim() || createPost.isPending}
+              style={{ width: "100%", padding: "12px", marginTop: "16px", background: c.chipActive, border: `1px solid ${c.borderHard}`, borderRadius: "6px", color: c.fg, cursor: "pointer", fontSize: "15px", fontFamily: "inherit", opacity: !postContent.trim() ? 0.4 : 1 }}>
+              {createPost.isPending ? "Posting..." : "Post"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ExchangeTab({ c }: { c: ReturnType<typeof useColors> }) {
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [activeFilter, setActiveFilter] = useState("all");
+
+  const drops = [
+    { name: "Tresor Midnight Rose", house: "Lancome", was: 95, now: 67, ends: "23:14:07", gradient: "linear-gradient(135deg, #E8C4D8, #6B2D5B)" },
+    { name: "Cinema EDP", house: "Yves Saint Laurent", was: 110, now: 79, ends: "18:42:31", gradient: "linear-gradient(135deg, #D4A052, #5B2D2D)" },
+    { name: "Idole L'Intense", house: "Giorgio Armani", was: 85, now: 58, ends: "06:08:55", gradient: "linear-gradient(135deg, #E8C4D8, #C47A2B)" },
+  ];
+
+  const listings = [
+    { name: "Chanel No. 5 EDP", fill: 80, seller: "@velvet.nina", archColor: "#6B2D5B", price: 62, certified: true, match: 84 },
+    { name: "Tom Ford Noir", fill: 60, seller: "@baroque.queen", archColor: "#5B2D2D", price: 74, certified: false, match: 0 },
+    { name: "Mojave Ghost", fill: 90, seller: "@greenscents", archColor: "#2D5B3A", price: 88, certified: true, match: 87 },
+    { name: "Flowerbomb", fill: 45, seller: "@scentedbylayla", archColor: "#5B2D2D", price: 55, certified: false, match: 0 },
+    { name: "Miss Dior Blooming", fill: 70, seller: "@cecifrag", archColor: "#C47A2B", price: 48, certified: true, match: 0 },
+    { name: "Flower Market", fill: 55, seller: "@thecanvas.co", archColor: "#8B8B8B", price: 71, certified: false, match: 0 },
+  ];
+
+  const filters = ["All", "Certified", "High Match", "Under $50", "Near Full"];
+
+  if (!isSubscribed) {
+    return (
+      <div data-testid="tab-content-exchange" style={{ animation: "fadeUp 0.5s ease-out", position: "relative" }}>
+        <div style={{ filter: "blur(6px)", opacity: 0.3, pointerEvents: "none" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+            {listings.map((l, i) => (
+              <div key={i} style={{ background: c.cardBg, border: `1px solid ${c.borderColor}`, borderRadius: "10px", padding: "16px", height: "120px" }}>
+                <p style={{ fontSize: "14px", color: c.fg }}>{l.name}</p>
+                <p style={{ fontSize: "12px", color: c.fgDim }}>${l.price}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{
+          position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+          background: c.isDark ? "rgba(0,0,0,0.6)" : "rgba(255,248,245,0.7)",
+          backdropFilter: "blur(4px)", borderRadius: "12px", padding: "40px 24px", textAlign: "center",
+        }}>
+          <div style={{ fontSize: "40px", marginBottom: "16px", color: c.gold }}>*</div>
+          <h3 style={{ fontFamily: "'Pinyon Script', cursive", fontSize: "32px", color: c.gold, fontWeight: 400, margin: "0 0 8px" }}>The Exchange</h3>
+          <p style={{ color: c.fgSoft, fontSize: "15px", marginBottom: "16px", lineHeight: 1.6 }}>Members only. Buy and sell authenticated luxury fragrance.</p>
+          <p style={{ color: c.fgDim, fontSize: "13px", margin: "0 0 4px" }}>Peer-to-peer authenticated resale</p>
+          <p style={{ color: c.fgDim, fontSize: "13px", margin: "0 0 24px" }}>Exclusive discontinued drops</p>
+          <button data-testid="button-join-exchange"
+            onClick={() => setIsSubscribed(true)}
+            style={{
+              padding: "14px 32px", background: `linear-gradient(135deg, ${c.gold}, rgba(212,175,55,0.7))`,
+              border: "none", borderRadius: "30px", color: "#000", fontSize: "14px",
+              fontFamily: "'Cormorant', Georgia, serif", letterSpacing: "0.1em", cursor: "pointer",
+              fontWeight: 500,
+            }}>
+            Join the Exchange - $9.99/mo
+          </button>
+          <p style={{ color: c.fgMuted, fontSize: "12px", marginTop: "10px" }}>or $89/yr - Cancel anytime</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div data-testid="tab-content-exchange" style={{ animation: "fadeUp 0.5s ease-out" }}>
+      <div style={{ marginBottom: "28px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
+          <h3 style={{ fontSize: "16px", fontWeight: 400, margin: 0, color: c.gold }}>L'Oreal Drops</h3>
+          <span style={{ fontSize: "12px", color: c.fgDim }}>Limited time</span>
+        </div>
+        <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "8px" }}>
+          {drops.map((drop, i) => (
+            <div key={i} data-testid={`card-drop-${i}`}
+              style={{ minWidth: "220px", borderRadius: "12px", overflow: "hidden", border: `1px solid ${c.borderColor}`, flexShrink: 0 }}>
+              <div style={{ height: "100px", background: drop.gradient, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+                <span style={{ position: "absolute", top: "8px", left: "8px", fontSize: "9px", padding: "2px 8px", background: "rgba(212,175,55,0.9)", borderRadius: "4px", color: "#000", fontWeight: 600, letterSpacing: "0.1em" }}>DISCONTINUED</span>
+              </div>
+              <div style={{ padding: "12px 14px", background: c.cardBg }}>
+                <p style={{ fontSize: "14px", margin: "0 0 2px", color: c.fg }}>{drop.name}</p>
+                <p style={{ fontSize: "11px", color: c.fgDim, margin: "0 0 6px" }}>{drop.house}</p>
+                <div style={{ display: "flex", gap: "8px", alignItems: "baseline", marginBottom: "6px" }}>
+                  <span style={{ fontSize: "12px", color: c.fgMuted, textDecoration: "line-through" }}>${drop.was}</span>
+                  <span style={{ fontSize: "16px", color: c.gold, fontWeight: 500 }}>${drop.now}</span>
+                </div>
+                <p style={{ fontSize: "10px", color: c.fgDim, margin: "0 0 8px" }}>Drop ends in: {drop.ends}</p>
+                <button style={{ width: "100%", padding: "8px", background: c.chipActive, border: `1px solid ${c.borderHard}`, borderRadius: "6px", color: c.fgMid, fontSize: "11px", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif", letterSpacing: "0.1em" }}>
+                  Buy Now
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "20px" }}>
+        {filters.map(f => (
+          <button key={f} onClick={() => setActiveFilter(f.toLowerCase().replace(/\s/g, "-"))}
+            style={{
+              padding: "5px 12px", borderRadius: "20px", fontSize: "11px", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif",
+              background: activeFilter === f.toLowerCase().replace(/\s/g, "-") ? c.chipActive : "transparent",
+              border: `1px solid ${activeFilter === f.toLowerCase().replace(/\s/g, "-") ? c.borderHard : c.chipBorder}`,
+              color: activeFilter === f.toLowerCase().replace(/\s/g, "-") ? c.fgMid : c.fgDim,
+            }}>
+            {f}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+        {listings.map((listing, i) => (
+          <div key={i} data-testid={`card-listing-${i}`}
+            style={{ background: c.cardBg, border: `1px solid ${c.borderColor}`, borderRadius: "10px", padding: "14px", cursor: "pointer" }}>
+            <div style={{ width: "40px", margin: "0 auto 8px" }}>
+              {BOTTLE_SHAPES[i % 5]("#9CA3AF", listing.fill, `ex-${i}`)}
+            </div>
+            <p style={{ fontSize: "13px", margin: "0 0 2px", color: c.fg, textAlign: "center" }}>{listing.name}</p>
+            <p style={{ fontSize: "11px", color: c.fgDim, margin: "0 0 6px", textAlign: "center" }}>~{listing.fill}% full</p>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "4px", marginBottom: "6px" }}>
+              <span style={{ fontSize: "11px", color: c.fgSoft }}>{listing.seller}</span>
+              <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: listing.archColor, display: "inline-block" }} />
+            </div>
+            <div style={{ display: "flex", justifyContent: "center", gap: "8px", alignItems: "center" }}>
+              <span style={{ fontSize: "16px", fontWeight: 500, color: c.fg }}>${listing.price}</span>
+              {listing.certified && <span style={{ fontSize: "9px", color: c.greenDim }}>Certified</span>}
+            </div>
+            {listing.match > 0 && <p style={{ fontSize: "10px", color: c.greenDim, textAlign: "center", margin: "4px 0 0" }}>Match: {listing.match}%</p>}
+          </div>
+        ))}
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: "24px" }}>
+        <button data-testid="button-unsubscribe-exchange" onClick={() => setIsSubscribed(false)}
+          style={{ background: "none", border: "none", color: c.fgMuted, fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>
+          (Demo: toggle subscription off)
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ProfileTab({ userId, c }: { userId: string; c: ReturnType<typeof useColors> }) {
+  const user = getStoredUser();
+  const { theme, setTheme } = useTheme();
+  const [, setLocation] = useLocation();
+  const archetype = user?.archetypeId ? ARCHETYPES[user.archetypeId as ArchetypeId] : null;
+
+  const { data: vaultItems = [] } = useQuery<VaultItem[]>({
+    queryKey: ["/api/users", userId, "vault"],
+    queryFn: async () => { const res = await fetch(`/api/users/${userId}/vault`); return res.json(); },
+  });
+  const { data: wearLogs = [] } = useQuery<WearLogData[]>({
+    queryKey: ["/api/users", userId, "wear-logs"],
+    queryFn: async () => { const res = await fetch(`/api/users/${userId}/wear-logs`); return res.json(); },
+  });
+  const { data: posts = [] } = useQuery<FeedPostData[]>({
+    queryKey: ["/api/feed"],
+    queryFn: async () => { const res = await fetch(`/api/feed?userId=${userId}`); return res.json(); },
+  });
+
+  const myPosts = posts.filter(p => p.userId === userId);
+
+  const scentDna = [
+    { name: "Amber", pct: 78, color: "#D4A052" },
+    { name: "Woody", pct: 64, color: "#5B8C5A" },
+    { name: "Floral", pct: 51, color: "#E8C4D8" },
+    { name: "Musk", pct: 43, color: "#8B8B8B" },
+    { name: "Citrus", pct: 31, color: "#FFD700" },
+  ];
+
+  const funStats = [
+    { label: "Most worn time", value: "Evening" },
+    { label: "Fave season", value: "Autumn" },
+    { label: "Top house", value: "YSL" },
+    { label: "Avg reapplications", value: "1.4/day" },
+    { label: "Logging streak", value: "12 days" },
+    { label: "Most worn bottle", value: "La Vie Est Belle" },
+    { label: "Signature mood", value: "Date Night" },
+    { label: "Rarest bottle", value: "Black Orchid" },
+  ];
+
+  return (
+    <div data-testid="tab-content-profile" style={{ animation: "fadeUp 0.5s ease-out" }}>
+      <div style={{ textAlign: "center", marginBottom: "32px" }}>
+        <div style={{
+          width: "80px", height: "80px", borderRadius: "50%", margin: "0 auto 16px",
+          background: archetype ? `linear-gradient(135deg, ${archetype.color}60, ${archetype.color}20)` : c.cardBg,
+          border: `2px solid ${c.gold}`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: "32px", fontFamily: "'Pinyon Script', cursive", color: c.fg,
+        }}>
+          {(user?.displayName || user?.username || "?").charAt(0).toUpperCase()}
+        </div>
+        <p style={{ fontSize: "18px", fontWeight: 400, margin: "0 0 4px", color: c.fg }}>@{user?.username}</p>
+        {archetype && (
+          <>
+            <span style={{
+              display: "inline-block", padding: "4px 14px", fontSize: "12px",
+              background: `${archetype.color}20`, border: `1px solid ${archetype.color}40`,
+              borderRadius: "20px", color: archetype.color, marginBottom: "8px",
+            }}>
+              {archetype.name}
+            </span>
+            <p style={{ color: c.fgSoft, fontSize: "14px", maxWidth: "360px", margin: "8px auto 0", lineHeight: 1.6 }}>{archetype.description}</p>
+          </>
+        )}
+        <div style={{ display: "flex", gap: "12px", justifyContent: "center", marginTop: "16px" }}>
+          <button data-testid="button-edit-profile" style={{ padding: "6px 14px", background: "transparent", border: `1px solid ${c.borderColor}`, borderRadius: "20px", color: c.fgDim, fontSize: "12px", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif" }}>Edit Profile</button>
+          <button data-testid="button-retake-quiz" onClick={() => setLocation("/quiz?retake=true")}
+            style={{ padding: "6px 14px", background: "transparent", border: `1px solid ${c.borderColor}`, borderRadius: "20px", color: c.fgDim, fontSize: "12px", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif" }}>Retake Quiz</button>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "center", gap: "20px", marginBottom: "32px", flexWrap: "wrap" }}>
+        {[
+          { n: vaultItems.length, l: "Collection" },
+          { n: wearLogs.length, l: "Wears" },
+          { n: myPosts.length, l: "Posts" },
+          { n: 47, l: "Following" },
+          { n: 312, l: "Followers" },
+        ].map(s => (
+          <div key={s.l} style={{ textAlign: "center" }}>
+            <p style={{ fontSize: "22px", fontWeight: 300, margin: "0 0 2px", color: c.fg }}>{s.n}</p>
+            <p style={{ fontSize: "11px", color: c.fgDim, letterSpacing: "0.1em", textTransform: "uppercase", margin: 0 }}>{s.l}</p>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginBottom: "32px" }}>
+        <p style={{ fontSize: "13px", letterSpacing: "0.2em", textTransform: "uppercase", color: c.fgLabel, marginBottom: "16px" }}>Your Scent DNA</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {scentDna.map(d => (
+            <div key={d.name} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <span style={{ width: "56px", fontSize: "12px", color: c.fgSoft, textAlign: "right" }}>{d.name}</span>
+              <div style={{ flex: 1, height: "8px", background: c.inputBg, borderRadius: "4px", overflow: "hidden" }}>
+                <div style={{ width: `${d.pct}%`, height: "100%", background: d.color, borderRadius: "4px", transition: "width 0.5s ease" }} />
+              </div>
+              <span style={{ width: "36px", fontSize: "12px", color: c.fgDim }}>{d.pct}%</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: "32px" }}>
+        <p style={{ fontSize: "13px", letterSpacing: "0.2em", textTransform: "uppercase", color: c.fgLabel, marginBottom: "16px" }}>Your Fragrance Life</p>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+          {funStats.map(s => (
+            <div key={s.label} style={{ background: c.cardBg, border: `1px solid ${c.borderColor}`, borderRadius: "10px", padding: "14px" }}>
+              <p style={{ fontSize: "11px", color: c.fgDim, margin: "0 0 4px", letterSpacing: "0.06em" }}>{s.label}</p>
+              <p style={{ fontSize: "15px", color: c.fg, margin: 0, fontWeight: 400 }}>{s.value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: "32px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+          <p style={{ fontSize: "13px", letterSpacing: "0.2em", textTransform: "uppercase", color: c.fgLabel, margin: 0 }}>Theme</p>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "12px", color: c.fgDim }}>Light</span>
+            <button data-testid="button-theme-toggle"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              style={{
+                width: "44px", height: "24px", borderRadius: "12px", cursor: "pointer", border: "none",
+                background: c.isDark ? c.chipActive : c.borderColor, position: "relative", transition: "background 0.2s",
+              }}>
+              <div style={{
+                width: "18px", height: "18px", borderRadius: "50%", background: c.fg,
+                position: "absolute", top: "3px", left: c.isDark ? "23px" : "3px", transition: "left 0.2s",
+              }} />
+            </button>
+            <span style={{ fontSize: "12px", color: c.fgDim }}>Dark</span>
+          </div>
+        </div>
+      </div>
+
+      {myPosts.length > 0 && (
+        <div style={{ marginBottom: "32px" }}>
+          <p style={{ fontSize: "13px", letterSpacing: "0.2em", textTransform: "uppercase", color: c.fgLabel, marginBottom: "16px" }}>From the Feed</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {myPosts.slice(0, 3).map(post => (
+              <div key={post.id} style={{ background: c.cardBg, border: `1px solid ${c.borderColor}`, borderRadius: "8px", padding: "12px 14px" }}>
+                {post.rating && <p style={{ fontSize: "12px", color: c.gold, margin: "0 0 4px" }}>{"\u2605".repeat(post.rating)}</p>}
+                <p style={{ fontSize: "14px", color: c.fgStrong, margin: "0 0 4px", lineHeight: 1.5 }}>{post.content?.slice(0, 100)}{(post.content?.length || 0) > 100 ? "..." : ""}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  {post.fragrance && <span style={{ fontSize: "11px", color: c.fgDim }}>{post.fragrance.name}</span>}
+                  <span style={{ fontSize: "11px", color: c.fgMuted }}>{post.likeCount} likes</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div style={{ textAlign: "center", padding: "20px 0 40px" }}>
+        <p style={{ fontSize: "12px", color: c.fgMuted, marginBottom: "16px" }}>
+          Member since {user?.createdAt ? new Date(user.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : "2025"}
+        </p>
+        <button data-testid="button-logout" onClick={() => { clearUser(); setLocation("/"); }}
+          style={{ padding: "8px 24px", background: "transparent", border: `1px solid ${c.borderColor}`, borderRadius: "20px", color: c.fgDim, fontSize: "12px", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif", letterSpacing: "0.1em" }}>
+          Log Out
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState<Tab>("home");
+  const [mainTab, setMainTab] = useState<MainTab>("home");
+  const [homeSubTab, setHomeSubTab] = useState<HomeSubTab>("vault");
+  const [exploreSubTab, setExploreSubTab] = useState<ExploreSubTab>("feed");
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [detailFragrance, setDetailFragrance] = useState<(Fragrance & { matchScore?: number }) | null>(null);
@@ -461,14 +1240,14 @@ export default function Dashboard() {
 
   const archetype = user.archetypeId ? ARCHETYPES[user.archetypeId as ArchetypeId] : null;
 
-  const { data: recommendations = [] } = useQuery<(Fragrance & { matchScore: number })[]>({
-    queryKey: ["/api/users", user.id, "recommendations"],
-    queryFn: async () => { const res = await fetch(`/api/users/${user.id}/recommendations`); return res.json(); },
-  });
-
   const { data: vaultItems = [] } = useQuery<(VaultItem & { fragrance: Fragrance })[]>({
     queryKey: ["/api/users", user.id, "vault"],
     queryFn: async () => { const res = await fetch(`/api/users/${user.id}/vault`); return res.json(); },
+  });
+
+  const { data: recommendations = [] } = useQuery<(Fragrance & { matchScore: number })[]>({
+    queryKey: ["/api/users", user.id, "recommendations"],
+    queryFn: async () => { const res = await fetch(`/api/users/${user.id}/recommendations`); return res.json(); },
   });
 
   const { data: toTryItems = [] } = useQuery<(ToTryItem & { fragrance: Fragrance })[]>({
@@ -484,268 +1263,144 @@ export default function Dashboard() {
 
   const addToVault = useMutation({
     mutationFn: async (fragranceId: string) => { const res = await apiRequest("POST", `/api/users/${user.id}/vault`, { fragranceId }); return res.json(); },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/users", user.id, "vault"] }); queryClient.invalidateQueries({ queryKey: ["/api/users", user.id, "recommendations"] }); setShowAddModal(false); setDetailFragrance(null); setSearchQuery(""); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/users", user.id, "vault"] }); setShowAddModal(false); setDetailFragrance(null); setSearchQuery(""); },
   });
-
   const addToTry = useMutation({
     mutationFn: async ({ fragranceId, priority }: { fragranceId: string; priority: string }) => { const res = await apiRequest("POST", `/api/users/${user.id}/to-try`, { fragranceId, priority }); return res.json(); },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/users", user.id, "to-try"] }); queryClient.invalidateQueries({ queryKey: ["/api/users", user.id, "recommendations"] }); setDetailFragrance(null); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/users", user.id, "to-try"] }); setDetailFragrance(null); },
   });
-
   const removeFromVault = useMutation({
     mutationFn: async (id: string) => { await apiRequest("DELETE", `/api/vault/${id}`); },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/users", user.id, "vault"] }); queryClient.invalidateQueries({ queryKey: ["/api/users", user.id, "recommendations"] }); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/users", user.id, "vault"] }); },
   });
-
-  const removeFromToTry = useMutation({
-    mutationFn: async (id: string) => { await apiRequest("DELETE", `/api/to-try/${id}`); },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/users", user.id, "to-try"] }); },
-  });
-
   const updateVaultItem = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: any }) => { const res = await apiRequest("PATCH", `/api/vault/${id}`, updates); return res.json(); },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/users", user.id, "vault"] }); setEditingVaultItem(null); },
   });
-
-  const updateToTryPriority = useMutation({
-    mutationFn: async ({ id, priority }: { id: string; priority: string }) => { const res = await apiRequest("PATCH", `/api/to-try/${id}`, { priority }); return res.json(); },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/users", user.id, "to-try"] }); },
-  });
-
   const logWear = useMutation({
     mutationFn: async ({ fragranceId, occasion, notes }: { fragranceId: string; occasion?: string; notes?: string }) => { const res = await apiRequest("POST", `/api/users/${user.id}/wear-logs`, { fragranceId, occasion, notes }); return res.json(); },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/users", user.id, "wear-logs"] }); queryClient.invalidateQueries({ queryKey: ["/api/feed"] }); setWearLogFragId(null); },
   });
 
-  const handleLogout = () => { clearUser(); setLocation("/"); };
-
   const vaultFragIds = new Set(vaultItems.map(v => v.fragranceId));
-  const toTryFragIds = new Set(toTryItems.map(t => t.fragranceId));
 
-  const tabStyle = (t: Tab) => ({
-    padding: "12px 0",
-    background: "transparent",
-    border: "none",
-    borderBottom: activeTab === t ? `2px solid ${c.fgSoft}` : "2px solid transparent",
-    color: activeTab === t ? c.fgStrong : c.fgDim,
-    fontSize: "13px",
-    letterSpacing: "0.15em",
-    textTransform: "uppercase" as const,
-    cursor: "pointer",
-    fontFamily: "'Cormorant', Georgia, serif",
-    transition: "all 0.3s ease",
-    flex: 1,
-    fontWeight: activeTab === t ? 500 : 400,
+  const wearLogFragName = wearLogFragId ? (vaultItems.find(v => v.fragranceId === wearLogFragId)?.fragrance?.name || "Fragrance") : "";
+
+  const subTabStyle = (active: boolean) => ({
+    padding: "10px 0", background: "transparent", border: "none",
+    borderBottom: active ? `2px solid ${c.fgSoft}` : "2px solid transparent",
+    color: active ? c.fgStrong : c.fgDim, fontSize: "13px",
+    letterSpacing: "0.12em", textTransform: "uppercase" as const,
+    cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif",
+    transition: "all 0.3s ease", flex: 1, fontWeight: active ? 500 : 400,
   });
 
-  const sectionLabel = { fontSize: "13px", fontWeight: 400 as const, letterSpacing: "0.2em", textTransform: "uppercase" as const, color: c.fgLabel, margin: "0 0 20px" };
-  const cardBase = { background: c.cardBg, border: `1px solid ${c.borderColor}`, borderRadius: "8px", padding: "20px", transition: "border-color 0.3s ease", cursor: "pointer" };
-  const actionBtn = (filled = false) => ({
-    padding: "8px 18px",
-    background: filled ? c.chipActive : "transparent",
-    border: `1px solid ${filled ? c.borderColor : c.chipBorder}`,
-    borderRadius: "4px",
-    color: filled ? c.fgMid : c.fgDim,
-    fontSize: "11px",
-    letterSpacing: "0.18em",
-    textTransform: "uppercase" as const,
-    cursor: "pointer",
-    fontFamily: "'Cormorant', Georgia, serif",
-    transition: "all 0.2s ease",
-  });
-
-  const wearLogFragName = wearLogFragId ? (vaultItems.find(v => v.fragranceId === wearLogFragId)?.fragrance?.name || recommendations.find(r => r.id === wearLogFragId)?.name || "Fragrance") : "";
+  const bottomNavIcon = (tab: MainTab, label: string) => {
+    const active = mainTab === tab;
+    const icons: Record<MainTab, string> = { home: "\u2302", explore: "\u2661", profile: "\u2609" };
+    return (
+      <button key={tab} data-testid={`nav-${tab}`}
+        onClick={() => setMainTab(tab)}
+        style={{
+          flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px",
+          background: "none", border: "none", cursor: "pointer", padding: "8px 0",
+          color: active ? c.fg : c.fgDim, transition: "color 0.2s",
+        }}>
+        <span style={{ fontSize: "20px" }}>{icons[tab]}</span>
+        <span style={{ fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: "'Cormorant', Georgia, serif" }}>{label}</span>
+      </button>
+    );
+  };
 
   return (
-    <div data-testid="dashboard-page" style={{ minHeight: "100vh", background: c.bg, fontFamily: "'Cormorant', Georgia, serif", color: c.fg, paddingBottom: "100px" }}>
-      <header style={{ padding: "20px clamp(20px, 5vw, 40px)", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${c.borderSoft}` }}>
-        <h1 style={{ fontFamily: "'Pinyon Script', cursive", fontSize: "28px", fontWeight: 400, margin: 0 }}>Sillage</h1>
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-          <button data-testid="button-nav-feed" onClick={() => setLocation("/feed")}
-            style={{ background: "transparent", border: "none", color: c.fgDim, fontSize: "12px", cursor: "pointer", letterSpacing: "0.12em", fontFamily: "'Cormorant', Georgia, serif", textTransform: "uppercase", transition: "color 0.2s" }}
-            onMouseEnter={e => e.currentTarget.style.color = c.fgSoft} onMouseLeave={e => e.currentTarget.style.color = c.fgDim}>
-            Feed
-          </button>
-          <button data-testid="button-nav-profile" onClick={() => setLocation("/profile")}
-            style={{ background: "transparent", border: "none", color: c.fgDim, fontSize: "12px", cursor: "pointer", letterSpacing: "0.12em", fontFamily: "'Cormorant', Georgia, serif", textTransform: "uppercase", transition: "color 0.2s" }}
-            onMouseEnter={e => e.currentTarget.style.color = c.fgSoft} onMouseLeave={e => e.currentTarget.style.color = c.fgDim}>
-            Profile
-          </button>
+    <div data-testid="dashboard-page" style={{ minHeight: "100vh", background: c.bg, fontFamily: "'Cormorant', Georgia, serif", color: c.fg }}>
+      <header style={{ padding: "16px clamp(20px, 5vw, 40px)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <h1 style={{ fontFamily: "'Pinyon Script', cursive", fontSize: "26px", fontWeight: 400, margin: 0, color: c.gold }}>Sillage</h1>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {archetype && (
+            <span style={{ fontSize: "11px", color: c.goldDim, letterSpacing: "0.06em" }}>{archetype.name}</span>
+          )}
           <span style={{ color: c.fgLabel, fontSize: "14px" }}>{user.displayName || user.username}</span>
-          <button data-testid="button-logout" onClick={handleLogout} style={{ background: "transparent", border: "none", color: c.fgMuted, fontSize: "12px", cursor: "pointer", letterSpacing: "0.1em", fontFamily: "'Cormorant', Georgia, serif" }}>
-            Sign Out
-          </button>
         </div>
       </header>
 
-      <nav style={{ display: "flex", padding: "0 clamp(20px, 5vw, 40px)", borderBottom: `1px solid ${c.borderSoft}`, gap: "4px" }}>
-        {(["home", "vault", "discover", "to-try"] as Tab[]).map(t => (
-          <button key={t} data-testid={`tab-${t}`} onClick={() => { setActiveTab(t); setSearchQuery(""); }} style={tabStyle(t)}>
-            {t === "to-try" ? "To Try" : t}
-          </button>
-        ))}
-      </nav>
+      <main style={{ padding: "0 clamp(16px, 4vw, 40px) 100px", maxWidth: "720px", margin: "0 auto" }}>
+        {mainTab === "home" && (
+          <>
+            <div style={{ marginBottom: "8px", textAlign: "center" }}>
+              {archetype && (
+                <p style={{ fontSize: "12px", color: c.goldDim, letterSpacing: "0.15em", margin: "0 0 2px" }}>{archetype.name}</p>
+              )}
+              <p style={{ fontSize: "14px", color: c.fgSoft, margin: 0 }}>{vaultItems.length} bottles in your vault</p>
+            </div>
 
-      <main style={{ padding: "32px clamp(20px, 5vw, 40px)", maxWidth: "720px", margin: "0 auto" }}>
-        {activeTab === "home" && (
-          <div data-testid="tab-content-home" style={{ animation: "fadeUp 0.5s ease-out" }}>
-            {archetype && (
-              <div style={{ ...cardBase, cursor: "default", marginBottom: "32px", textAlign: "center", padding: "36px 24px", background: `linear-gradient(135deg, ${c.cardBg}, ${archetype.color}08)`, borderColor: `${archetype.color}15` }}>
-                <p style={{ color: c.fgDim, fontSize: "11px", letterSpacing: "0.3em", textTransform: "uppercase", marginBottom: "12px" }}>Your Sillage</p>
-                <h2 data-testid="text-user-archetype" style={{ fontFamily: "'Pinyon Script', cursive", fontSize: "clamp(32px, 7vw, 48px)", fontWeight: 400, margin: "0 0 10px", textShadow: `0 0 50px ${archetype.color}25` }}>{archetype.name}</h2>
-                <p style={{ color: c.fgLabel, fontSize: "15px", fontStyle: "italic", margin: "0 0 16px" }}>{archetype.tagline}</p>
-                <p style={{ color: c.fgDim, fontSize: "14px", maxWidth: "400px", margin: "0 auto", lineHeight: 1.7 }}>{archetype.description}</p>
+            <nav style={{ display: "flex", borderBottom: `1px solid ${c.borderSoft}`, marginBottom: "24px" }}>
+              {([["vault", "My Vault"], ["log", "Scent Log"], ["totry", "To Try"]] as [HomeSubTab, string][]).map(([key, label]) => (
+                <button key={key} data-testid={`subtab-${key}`} onClick={() => setHomeSubTab(key)} style={subTabStyle(homeSubTab === key)}>{label}</button>
+              ))}
+            </nav>
+
+            {homeSubTab === "vault" && (
+              <div style={{ animation: "fadeUp 0.5s ease-out" }}>
+                <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "8px" }}>
+                  <button data-testid="button-add-to-vault" onClick={() => setShowAddModal(true)}
+                    style={{ padding: "6px 14px", background: c.chipActive, border: `1px solid ${c.borderColor}`, borderRadius: "20px", color: c.fgMid, fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif" }}>+ Add</button>
+                </div>
+                <GlassShelfVault
+                  items={vaultItems}
+                  onEdit={setEditingVaultItem}
+                  onDetail={setDetailFragrance}
+                  onRemove={(id) => removeFromVault.mutate(id)}
+                  onAdd={() => setShowAddModal(true)}
+                  onLogWear={(fid) => setWearLogFragId(fid)}
+                  c={c}
+                />
               </div>
             )}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
-              <p style={sectionLabel}>Recommended for You</p>
-            </div>
-            <p style={{ color: c.fgMuted, fontSize: "13px", marginBottom: "20px", lineHeight: 1.6 }}>Fragrances scored for your taste profile</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              {recommendations.slice(0, 6).map(frag => (
-                <div key={frag.id} data-testid={`card-recommendation-${frag.id}`} onClick={() => setDetailFragrance(frag)} style={cardBase}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px" }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: "18px", margin: "0 0 3px", fontWeight: 400, lineHeight: 1.3 }}>{frag.name}</p>
-                      <p style={{ color: c.fgLabel, fontSize: "14px", margin: "0 0 8px" }}>
-                        {frag.house}
-                        {frag.concentration && <span style={{ color: c.fgMuted }}> {"\u00B7"} {frag.concentration}</span>}
-                      </p>
-                      <p style={{ color: c.fgDim, fontSize: "13px", margin: 0, lineHeight: 1.6 }}>
-                        {frag.description?.slice(0, 100)}{(frag.description?.length || 0) > 100 ? "..." : ""}
-                      </p>
-                    </div>
-                    <div style={{ textAlign: "right", flexShrink: 0, paddingTop: "2px" }}>
-                      <span data-testid={`text-match-score-${frag.id}`} style={{ fontSize: "24px", fontWeight: 300, color: frag.matchScore >= 70 ? c.green : frag.matchScore >= 50 ? c.fgSoft : c.fgDim }}>{frag.matchScore}%</span>
-                      <p style={{ color: c.fgMuted, fontSize: "10px", margin: "3px 0 0", letterSpacing: "0.15em", textTransform: "uppercase" }}>match</p>
-                    </div>
-                  </div>
-                  <div style={{ display: "flex", gap: "8px", marginTop: "14px" }}>
-                    {!vaultFragIds.has(frag.id) && (
-                      <button data-testid={`button-add-vault-${frag.id}`} onClick={e => { e.stopPropagation(); addToVault.mutate(frag.id); }} style={actionBtn(true)}>+ Vault</button>
-                    )}
-                    {!toTryFragIds.has(frag.id) && !vaultFragIds.has(frag.id) && (
-                      <button data-testid={`button-add-try-${frag.id}`} onClick={e => { e.stopPropagation(); addToTry.mutate({ fragranceId: frag.id, priority: "curious" }); }} style={actionBtn()}>+ To Try</button>
-                    )}
-                    {(vaultFragIds.has(frag.id) || toTryFragIds.has(frag.id)) && (
-                      <span style={{ fontSize: "11px", color: c.fgMuted, letterSpacing: "0.15em", textTransform: "uppercase", alignSelf: "center" }}>
-                        {vaultFragIds.has(frag.id) ? "In vault" : "On to-try list"}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
-        {activeTab === "vault" && (
-          <GlassShelfVault
-            items={vaultItems}
-            onEdit={setEditingVaultItem}
-            onDetail={setDetailFragrance}
-            onRemove={(id) => removeFromVault.mutate(id)}
-            onAdd={() => setShowAddModal(true)}
-            onLogWear={(fid) => setWearLogFragId(fid)}
-            c={c}
-          />
-        )}
-
-        {activeTab === "discover" && (
-          <div data-testid="tab-content-discover" style={{ animation: "fadeUp 0.5s ease-out" }}>
-            <p style={{ ...sectionLabel, marginBottom: "16px" }}>Discover</p>
-            <div style={{ marginBottom: "24px" }}>
-              <input data-testid="input-search-fragrances" type="text" placeholder="Search by name, house, or family..."
-                value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                style={{ width: "100%", padding: "14px 18px", background: c.inputBg, border: `1px solid ${c.borderColor}`, borderRadius: "6px", color: c.fg, fontSize: "15px", fontFamily: "'Cormorant', Georgia, serif", outline: "none", boxSizing: "border-box", transition: "border-color 0.3s ease" }}
-                onFocus={e => e.target.style.borderColor = c.borderHard} onBlur={e => e.target.style.borderColor = c.borderColor} />
-            </div>
-            {!searchQuery.trim() && <p style={{ color: c.fgMuted, fontSize: "13px", marginBottom: "20px" }}>Showing your top matches. Search to find specific fragrances.</p>}
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              {(searchQuery.trim() ? searchResults : recommendations).map(frag => (
-                <div key={frag.id} data-testid={`card-discover-${frag.id}`} onClick={() => setDetailFragrance(frag as any)} style={cardBase}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px" }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: "18px", margin: "0 0 3px", fontWeight: 400 }}>{frag.name}</p>
-                      <p style={{ color: c.fgLabel, fontSize: "14px", margin: "0 0 6px" }}>
-                        {frag.house}
-                        {frag.concentration && <span style={{ color: c.fgMuted }}> {"\u00B7"} {frag.concentration}</span>}
-                      </p>
-                      {frag.family && (
-                        <span style={{ display: "inline-block", padding: "3px 10px", fontSize: "10px", background: c.inputBg, borderRadius: "20px", color: c.fgDim, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>{frag.family}</span>
-                      )}
-                      <p style={{ color: c.fgDim, fontSize: "13px", margin: "4px 0 0", lineHeight: 1.6 }}>
-                        {frag.description?.slice(0, 120)}{(frag.description?.length || 0) > 120 ? "..." : ""}
-                      </p>
-                    </div>
-                    {"matchScore" in frag && (
-                      <div style={{ textAlign: "right", flexShrink: 0 }}>
-                        <span style={{ fontSize: "22px", fontWeight: 300, color: (frag as any).matchScore >= 70 ? c.green : c.fgSoft }}>{(frag as any).matchScore}%</span>
-                      </div>
-                    )}
-                  </div>
-                  <div style={{ display: "flex", gap: "8px", marginTop: "14px" }}>
-                    {!vaultFragIds.has(frag.id) && (
-                      <button data-testid={`button-discover-vault-${frag.id}`} onClick={e => { e.stopPropagation(); addToVault.mutate(frag.id); }} disabled={addToVault.isPending} style={actionBtn(true)}>+ Vault</button>
-                    )}
-                    {!toTryFragIds.has(frag.id) && !vaultFragIds.has(frag.id) && (
-                      <button data-testid={`button-discover-try-${frag.id}`} onClick={e => { e.stopPropagation(); addToTry.mutate({ fragranceId: frag.id, priority: "curious" }); }} disabled={addToTry.isPending} style={actionBtn()}>+ To Try</button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {activeTab === "to-try" && (
-          <div data-testid="tab-content-to-try" style={{ animation: "fadeUp 0.5s ease-out" }}>
-            <p style={sectionLabel}>To Try {"\u00B7"} {toTryItems.length}</p>
-            {toTryItems.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "60px 24px" }}>
-                <p style={{ color: c.fgDim, fontSize: "16px", marginBottom: "10px", lineHeight: 1.5 }}>Nothing on your list yet</p>
-                <p style={{ color: c.fgMuted, fontSize: "14px", lineHeight: 1.6, maxWidth: "300px", margin: "0 auto" }}>Browse your recommendations and add fragrances you want to sample.</p>
-              </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                {toTryItems.map(item => (
-                  <div key={item.id} data-testid={`card-try-${item.id}`} onClick={() => item.fragrance && setDetailFragrance({ ...item.fragrance, matchScore: item.matchScore ?? undefined } as any)} style={cardBase}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                      <div style={{ flex: 1 }}>
-                        <p style={{ fontSize: "18px", margin: "0 0 3px", fontWeight: 400 }}>{item.fragrance?.name}</p>
-                        <p style={{ color: c.fgLabel, fontSize: "14px", margin: "0 0 8px" }}>{item.fragrance?.house}</p>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
-                          {item.matchScore ? <span style={{ fontSize: "12px", color: c.greenDim }}>{Math.round(item.matchScore)}% match</span> : null}
-                          <div style={{ display: "flex", gap: "4px" }}>
-                            {PRIORITIES.map(p => (
-                              <button key={p.value} data-testid={`button-priority-${p.value}-${item.id}`}
-                                onClick={e => { e.stopPropagation(); updateToTryPriority.mutate({ id: item.id, priority: p.value }); }}
-                                style={{ padding: "3px 10px", background: item.priority === p.value ? c.chipActive : "transparent", border: `1px solid ${item.priority === p.value ? c.borderHard : c.chipBorder}`, borderRadius: "20px", color: item.priority === p.value ? c.fgMid : c.fgMuted, fontSize: "10px", letterSpacing: "0.1em", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif", textTransform: "uppercase", transition: "all 0.2s ease" }}>
-                                {p.label}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                      <div style={{ display: "flex", gap: "8px", alignItems: "center", flexShrink: 0, marginLeft: "12px" }}>
-                        {!vaultFragIds.has(item.fragranceId) && (
-                          <button data-testid={`button-try-to-vault-${item.id}`} onClick={e => { e.stopPropagation(); addToVault.mutate(item.fragranceId); removeFromToTry.mutate(item.id); }} style={actionBtn(true)}>Own it</button>
-                        )}
-                        <button data-testid={`button-remove-try-${item.id}`} onClick={e => { e.stopPropagation(); removeFromToTry.mutate(item.id); }}
-                          style={{ background: "transparent", border: "none", color: c.fgMuted, fontSize: "18px", cursor: "pointer", padding: "4px" }}>{"\u00D7"}</button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            {homeSubTab === "log" && (
+              <ScentLogTab userId={user.id} vaultItems={vaultItems} c={c} />
             )}
-          </div>
+
+            {homeSubTab === "totry" && (
+              <ToTryTab userId={user.id} vaultFragIds={vaultFragIds} toTryItems={toTryItems}
+                onDetail={(frag, score) => setDetailFragrance({ ...frag, matchScore: score } as any)} c={c} />
+            )}
+          </>
         )}
+
+        {mainTab === "explore" && (
+          <>
+            <nav style={{ display: "flex", borderBottom: `1px solid ${c.borderSoft}`, marginBottom: "24px" }}>
+              {([["feed", "Feed"], ["exchange", "Exchange"]] as [ExploreSubTab, string][]).map(([key, label]) => (
+                <button key={key} data-testid={`subtab-${key}`} onClick={() => setExploreSubTab(key)} style={subTabStyle(exploreSubTab === key)}>{label}</button>
+              ))}
+            </nav>
+
+            {exploreSubTab === "feed" && <FeedTab userId={user.id} c={c} />}
+            {exploreSubTab === "exchange" && <ExchangeTab c={c} />}
+          </>
+        )}
+
+        {mainTab === "profile" && <ProfileTab userId={user.id} c={c} />}
       </main>
+
+      <nav data-testid="bottom-nav" style={{
+        position: "fixed", bottom: 0, left: 0, right: 0,
+        background: c.isDark ? "rgba(0,0,0,0.95)" : "rgba(255,248,245,0.95)",
+        backdropFilter: "blur(12px)",
+        borderTop: `1px solid ${c.borderSoft}`,
+        display: "flex", padding: "6px 0 env(safe-area-inset-bottom, 8px)",
+        zIndex: 50,
+      }}>
+        {bottomNavIcon("home", "Home")}
+        {bottomNavIcon("explore", "Explore")}
+        {bottomNavIcon("profile", "Profile")}
+      </nav>
 
       {showAddModal && (
         <div data-testid="add-modal-overlay" onClick={() => { setShowAddModal(false); setSearchQuery(""); }}
-          style={{ position: "fixed", inset: 0, background: c.overlayBg, zIndex: 50, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+          style={{ position: "fixed", inset: 0, background: c.overlayBg, zIndex: 55, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
           <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: "520px", maxHeight: "75vh", background: c.panelBg, borderRadius: "16px 16px 0 0", padding: "28px", overflow: "auto", border: `1px solid ${c.borderColor}`, borderBottom: "none", animation: "slideUp 0.3s ease-out" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
               <h3 style={{ fontSize: "14px", fontWeight: 400, letterSpacing: "0.2em", textTransform: "uppercase", color: c.fgSoft, margin: 0 }}>Add to Vault</h3>
@@ -756,7 +1411,7 @@ export default function Dashboard() {
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {searchResults.filter(f => !vaultFragIds.has(f.id)).map(frag => (
                 <div key={frag.id} data-testid={`card-modal-frag-${frag.id}`} onClick={() => addToVault.mutate(frag.id)}
-                  style={{ ...cardBase, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  style={{ background: c.cardBg, border: `1px solid ${c.borderColor}`, borderRadius: "8px", padding: "14px 16px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
                     <p style={{ fontSize: "16px", margin: "0 0 3px" }}>{frag.name}</p>
                     <p style={{ color: c.fgDim, fontSize: "13px", margin: 0 }}>{frag.house}</p>
@@ -764,9 +1419,6 @@ export default function Dashboard() {
                   <span style={{ color: c.fgMuted, fontSize: "20px" }}>+</span>
                 </div>
               ))}
-              {searchQuery.trim().length > 1 && searchResults.filter(f => !vaultFragIds.has(f.id)).length === 0 && (
-                <p style={{ color: c.fgMuted, fontSize: "14px", textAlign: "center", padding: "24px" }}>No results found</p>
-              )}
             </div>
           </div>
         </div>
@@ -780,7 +1432,7 @@ export default function Dashboard() {
           onAddVault={() => addToVault.mutate(detailFragrance.id)}
           onAddTry={(priority) => addToTry.mutate({ fragranceId: detailFragrance.id, priority })}
           inVault={vaultFragIds.has(detailFragrance.id)}
-          inTry={toTryFragIds.has(detailFragrance.id)}
+          inTry={new Set(toTryItems.map(t => t.fragranceId)).has(detailFragrance.id)}
           onLogWear={vaultFragIds.has(detailFragrance.id) ? () => { setWearLogFragId(detailFragrance.id); setDetailFragrance(null); } : undefined}
           c={c}
         />
@@ -815,6 +1467,10 @@ export default function Dashboard() {
         @keyframes slideUp {
           from { opacity: 0; transform: translateY(24px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes bokehDrift {
+          0% { transform: translateY(0) translateX(0); }
+          100% { transform: translateY(-20px) translateX(10px); }
         }
         body { margin: 0; background: ${c.bg} !important; }
         input::placeholder, textarea::placeholder { color: ${c.fgMuted}; }

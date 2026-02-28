@@ -1,7 +1,7 @@
 # Sillage — Luxury Fragrance Platform
 
 ## Overview
-A luxury fragrance discovery platform with a cinematic click-and-hold perfume spray animation as the entry experience, followed by a creator access code gate, multi-step onboarding quiz (with theme selection), scent archetype reveal, and a full dashboard with Vault (glass shelf display), Discover, To-Try, Feed, and Profile features. Light/dark theming throughout.
+A luxury fragrance discovery platform with a cinematic click-and-hold perfume spray animation entry, elegant two-flow login (new user with creator code / returning user), multi-step onboarding quiz, scent archetype reveal, and a full single-page app with bottom tab navigation between Home (My Vault / Scent Log / To Try), Explore (Feed / Exchange), and Profile tabs. Full light/dark theming throughout.
 
 ## Architecture
 - **Frontend**: React + wouter routing, TanStack Query, Canvas API for splash animation
@@ -11,48 +11,55 @@ A luxury fragrance discovery platform with a cinematic click-and-hold perfume sp
 - **Database**: PostgreSQL with users, access_codes, fragrances, vault_items, to_try_items, wear_logs, feed_posts, post_likes tables
 
 ## Key Files
-- `client/src/App.tsx` — Router with routes: `/`, `/access`, `/register`, `/quiz`, `/dashboard`, `/profile`, `/feed`
+- `client/src/App.tsx` — Router with routes: `/`, `/access`, `/quiz`, `/dashboard`
 - `client/src/pages/home.tsx` — Splash/entry page with click-and-hold spray animation + "Enter Sillage" CTA
-- `client/src/pages/access-code.tsx` — Creator access code gate (always dark)
-- `client/src/pages/register.tsx` — Account creation / login toggle (always dark)
+- `client/src/pages/access-code.tsx` — Two-flow login: "I'm new — I have a code" + "Welcome back" (always dark)
 - `client/src/pages/quiz.tsx` — 6-step onboarding quiz (step 0: theme choice, steps 1-5: preferences) with archetype reveal; supports `?retake=true` (5 steps, skips theme)
-- `client/src/pages/dashboard.tsx` — Main hub with Home/Vault/Discover/To-Try tabs, glass shelf vault, fragrance detail panel, vault edit panel, wear log modal, nav links to Feed/Profile
-- `client/src/pages/profile.tsx` — User profile with archetype badge, theme toggle, retake quiz, calendar heatmap, wear stats, logout
-- `client/src/pages/feed.tsx` — Social feed with posts, likes, create post modal, delete own posts
+- `client/src/pages/dashboard.tsx` — Single-page app with bottom nav bar (Home/Explore/Profile), sub-tabs, glass shelf vault, scent log timeline, to-try wishlist, social feed, exchange marketplace, profile with Scent DNA + stats
 - `client/src/lib/auth.ts` — localStorage user management (get/store/clear)
 - `client/src/lib/theme.tsx` — ThemeProvider + useTheme hook
 - `shared/schema.ts` — Drizzle schema, quiz constants, archetype definitions, FAMILY_COLORS, WEAR_OCCASIONS
 - `server/routes.ts` — All API routes + archetype computation + match scoring
 - `server/storage.ts` — DatabaseStorage class with CRUD operations
-- `server/seed.ts` — Seeds 5 access codes and 15 fragrances
+- `server/seed.ts` — Seeds 5 access codes, 33 fragrances, 8 social users, 8 vault items, 10 wear logs, 8 to-try items, 8 feed posts
 
 ## User Flow
 1. Splash page: Hold button to play perfume spray animation (125 frames, 30fps)
-2. After animation completes, "Enter Sillage" button appears
-3. Access code page: Enter a creator code (e.g., BRANDSTORM, SILLAGE_DEMO)
-4. Register/Login page: Create account or sign in
-5. Quiz: 6 steps — Theme Choice (light/dark), Season, Settings, Scent Vibes, Note Families, Identity Vibes
-6. Archetype reveal: Animated reveal of computed scent archetype
-7. Dashboard: Home (archetype + recommendations), Vault (glass shelf bottles), Discover (search), To-Try (wishlist)
-8. Feed: Social posts, wear logs, reviews, likes
-9. Profile: Stats, theme toggle, retake quiz, wear calendar heatmap
+2. After animation, "Enter Sillage" button appears → redirects to `/access`
+3. Login screen: Choose "I'm new — I have a code" (any non-empty code → quiz) or "Welcome back" (email + password → dashboard)
+4. Quiz: 6 steps — Theme Choice, Season, Settings, Scent Vibes, Note Families, Identity Vibes
+5. Archetype reveal → Dashboard
+6. Dashboard: Single-page app with bottom nav bar
 
-## Dashboard Features
-- **Glass Shelf Vault**: SVG perfume bottle silhouettes (5 shapes) colored by fragrance family, fill level visible, hover for info card + "Log Wear" / "Details" buttons, glass shelf glow effect
-- **Wear Log Modal**: Select occasion, add notes, logs wear and auto-posts to feed
-- **Fragrance Detail Panel**: Full details with note pyramid, match score, add-to-vault/try buttons, log wear for vault items
-- **Vault Edit Panel**: Rate, notes, bottle size, fill level, wear frequency
-- **To-Try Priority**: Must Try / Curious / Someday
-- **Search**: Multi-field search across name, house, and family
-- **Nav links**: Feed and Profile accessible from dashboard header
+## Dashboard Structure
+### Bottom Navigation: Home | Explore | Profile
+
+### Home Tab — Sub-tabs:
+- **My Vault**: Glass shelf vault with 5 SVG bottle shapes (Art Deco, Round Flacon, Geometric, Wide Oval, Flat Square), colored liquid fill by family, gold/silver caps, shine streaks, bokeh particles, hover cards with Log Wear/Details/Remove
+- **Scent Log**: Chronological wear timeline with mood tags and notes, "Log today's scent" quick-action with miniature vault grid
+- **To Try**: AI recommendations section + user's saved items with circular match score indicators, priority badges (High Priority/Curious/Someday)
+
+### Explore Tab — Sub-tabs:
+- **Feed**: Social posts with avatar (CSS gradient), username, archetype name + color dot, creator badge, star ratings, fragrance cards, like/delete, "In your To-Try" badge, create post modal
+- **Exchange**: Subscription-gated marketplace with frosted glass overlay for non-subscribers, L'Oreal Drops carousel (discontinued drops with countdown), peer-to-peer listings grid with Sillage Certified badge + match scores, filter pills
+
+### Profile Tab:
+- Identity header: gradient avatar with gold outline, @username, archetype pill badge + description
+- Stats row: Collection, Wears, Posts, Following, Followers
+- Scent DNA: horizontal bar chart (Amber 78%, Woody 64%, Floral 51%, Musk 43%, Citrus 31%)
+- Personal Stats: 8 fun stat cards in 2-column grid
+- Theme toggle, Retake Quiz, Recent Posts, Logout
+
+## Demo User
+- Username: `velvet.nina`, Password: `sillage2025`, Archetype: The Velvet Dusk
+- 8 vault bottles: YSL Libre, La Vie Est Belle, Jazz Club, Chance Eau Tendre, Black Orchid, Sauvage, Aventus, Peony & Blush Suede
+- 10 wear log entries, 8 to-try items, 8 feed posts from varied users
 
 ## Theme System
-- **Light mode**: bg `#FFF8F5` (warm pinkish cream), text `#1a1a1a`
-- **Dark mode**: bg `#000` (pure black), text `#fff` (100% opacity)
-- Theme choice in quiz step 0 (new users only); retake skips theme step
+- **Light mode**: bg `#FFF8F5`, text `#1a1a1a`
+- **Dark mode**: bg `#000`, text `#fff`
 - ThemeProvider wraps entire app, stored in localStorage
-- Dashboard, Profile, Feed pages use `useColors()` / `useTheme()` for adaptive styling
-- Access code, register, home pages always dark (entry experience)
+- Access/login page always dark
 
 ## API Endpoints
 - POST /api/access-code/validate — Validate access code
@@ -79,11 +86,10 @@ velvet-dusk, green-wanderer, clean-canvas, citrus-architect, baroque-collector, 
 BRANDSTORM, SILLAGE_DEMO, SILLAGE_LAYLA, VAULT_BYRD, SCENT_MAYA
 
 ## Design
-- Light mode: warm pinkish cream (#FFF8F5) background, dark text with opacity hierarchy
-- Dark mode: pure black (#000000) background, white text with opacity hierarchy
 - Pinyon Script (cursive) for headlines/logo
-- Cormorant (serif) for all UI text at readable sizes
-- Glass shelf vault with SVG bottle silhouettes colored by fragrance family
-- Minimal borders, glass-morphic cards with 8px border radius
-- Slide-up animations for modals and panels
-- No emoji in UI — text symbols and labels only
+- Cormorant (serif) for all UI text
+- Gold accent: rgba(212,175,55,0.85)
+- Violet accent: rgba(138,100,220,1) for pill buttons
+- Glass shelf with SVG bottles, bokeh particles, warm glow
+- Bottom tab nav with unicode icons
+- Minimal borders, glass-morphic cards, slide-up animations

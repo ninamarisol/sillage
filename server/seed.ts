@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { accessCodes, fragrances } from "@shared/schema";
+import { accessCodes, fragrances, users, vaultItems, toTryItems, wearLogs, feedPosts } from "@shared/schema";
 import { eq } from "drizzle-orm";
 
 export async function seedDatabase() {
@@ -19,7 +19,7 @@ export async function seedDatabase() {
     { code: "BRANDSTORM", creatorName: "L'Oréal Brandstorm" },
   ]);
 
-  await db.insert(fragrances).values([
+  const fragranceData = [
     {
       name: "Terre d'Hermès",
       house: "Hermès",
@@ -170,7 +170,281 @@ export async function seedDatabase() {
       family: "woody",
       description: "Raw and noble. Inspired by wide-open landscapes under a burning desert sky.",
     },
+    {
+      name: "YSL Libre",
+      house: "Yves Saint Laurent",
+      concentration: "EDP",
+      topNotes: ["mandarin", "lavender", "black currant"],
+      heartNotes: ["orange blossom", "jasmine"],
+      baseNotes: ["vanilla", "cedar", "musk"],
+      family: "oriental",
+      description: "Freedom in a bottle. A daring combination of lavender and orange blossom, hot and cold.",
+    },
+    {
+      name: "Replica Jazz Club",
+      house: "Maison Margiela",
+      concentration: "EDT",
+      topNotes: ["pink pepper", "neroli", "lemon"],
+      heartNotes: ["rum", "clary sage", "java vetiver"],
+      baseNotes: ["tobacco leaf", "vanilla", "styrax"],
+      family: "oriental",
+      description: "A smoky blend that captures the ambiance of a Brooklyn jazz club at midnight.",
+    },
+    {
+      name: "Chance Eau Tendre",
+      house: "Chanel",
+      concentration: "EDT",
+      topNotes: ["quince", "grapefruit"],
+      heartNotes: ["hyacinth", "jasmine"],
+      baseNotes: ["white musk", "iris", "cedar", "amber"],
+      family: "floral",
+      description: "A tender and sparkling floral fragrance. A rounded, delicate chance encounter.",
+    },
+    {
+      name: "Peony & Blush Suede",
+      house: "Jo Malone",
+      concentration: "EDC",
+      topNotes: ["red apple"],
+      heartNotes: ["peony", "rose"],
+      baseNotes: ["suede", "gillyflower"],
+      family: "floral",
+      description: "The essence of charm. Peonies in voluptuous bloom, mingled with the sensuality of soft suede.",
+    },
+    {
+      name: "Gypsy Water",
+      house: "Byredo",
+      concentration: "EDP",
+      topNotes: ["bergamot", "lemon", "pepper"],
+      heartNotes: ["incense", "pine needle", "orris"],
+      baseNotes: ["amber", "vanilla", "sandalwood"],
+      family: "woody",
+      description: "Romanticized vision of the Romani lifestyle. Fresh soil, deep forests, and campfire nights.",
+    },
+    {
+      name: "Mon Guerlain",
+      house: "Guerlain",
+      concentration: "EDP",
+      topNotes: ["lavender", "bergamot"],
+      heartNotes: ["iris", "jasmine sambac"],
+      baseNotes: ["vanilla", "sandalwood", "coumarin"],
+      family: "oriental",
+      description: "Strong, free, and sensual. A tribute to today's femininity — a choice, not a dictate.",
+    },
+    {
+      name: "Rose 31",
+      house: "Le Labo",
+      concentration: "EDP",
+      topNotes: ["rose", "cumin"],
+      heartNotes: ["cedar", "gaiac wood", "olibanum"],
+      baseNotes: ["vetiver", "amber", "musk"],
+      family: "floral",
+      description: "Not your grandmother's rose. A darker, more daring floral stripped of all cliché.",
+    },
+    {
+      name: "Ambre Sultan",
+      house: "Serge Lutens",
+      concentration: "EDP",
+      topNotes: ["oregano", "coriander", "myrtle"],
+      heartNotes: ["bay leaf", "angelica root"],
+      baseNotes: ["amber", "sandalwood", "benzoin", "vanilla"],
+      family: "oriental",
+      description: "A resplendent oriental amber discovered in a Moroccan souk. Warm, resinous, hypnotic.",
+    },
+    {
+      name: "Atomic Rose",
+      house: "Initio",
+      concentration: "EDP",
+      topNotes: ["rose", "saffron"],
+      heartNotes: ["amberwood", "musk"],
+      baseNotes: ["amber", "sandalwood", "cashmeran"],
+      family: "oriental",
+      description: "A bold molecular explosion of Turkish rose and addictive amber.",
+    },
+    {
+      name: "Delina",
+      house: "Parfums de Marly",
+      concentration: "EDP",
+      topNotes: ["lychee", "rhubarb", "bergamot"],
+      heartNotes: ["rose", "peony", "muguet"],
+      baseNotes: ["cashmeran", "musk", "vanilla", "cedar"],
+      family: "floral",
+      description: "A neo-romantic bouquet of Turkish rose and lychee. Charming, feminine, and modern.",
+    },
+    {
+      name: "Tom Ford Noir",
+      house: "Tom Ford",
+      concentration: "EDP",
+      topNotes: ["violet", "pink pepper", "bergamot"],
+      heartNotes: ["black pepper", "nutmeg", "iris"],
+      baseNotes: ["amber", "vanilla", "vetiver", "patchouli"],
+      family: "oriental",
+      description: "Mysterious, complex, and sensual. The evening side of Tom Ford's aesthetic.",
+    },
+    {
+      name: "Mojave Ghost",
+      house: "Byredo",
+      concentration: "EDP",
+      topNotes: ["ambrette", "sapodilla"],
+      heartNotes: ["violet", "magnolia", "sandalwood"],
+      baseNotes: ["choya loban", "cedar", "musk"],
+      family: "floral",
+      description: "Inspired by the ghost flower that blooms in impossible desert conditions. Resilience, captured.",
+    },
+    {
+      name: "Flower Market",
+      house: "Maison Margiela",
+      concentration: "EDT",
+      topNotes: ["freesia", "sambac jasmine"],
+      heartNotes: ["rose", "jasmine", "orange blossom"],
+      baseNotes: ["musk", "white wood"],
+      family: "floral",
+      description: "A vivid walk through an open-air flower market. Dewy petals and morning sunlight.",
+    },
+    {
+      name: "Wood Sage & Sea Salt",
+      house: "Jo Malone",
+      concentration: "EDC",
+      topNotes: ["ambrette seeds"],
+      heartNotes: ["sea salt", "sage"],
+      baseNotes: ["driftwood", "grapefruit"],
+      family: "woody",
+      description: "Wind-swept shores. The mineral scent of sea-salted skin warmed by driftwood fires.",
+    },
+    {
+      name: "Trésor Midnight Rose",
+      house: "Lancôme",
+      concentration: "EDP",
+      topNotes: ["raspberry", "black currant"],
+      heartNotes: ["rose", "jasmine", "peony"],
+      baseNotes: ["musk", "cedar", "vanilla"],
+      family: "floral",
+      description: "A romantic Parisian midnight captured in a bottle. Flirtatious, mysterious, and irresistible.",
+    },
+    {
+      name: "Cinema",
+      house: "Yves Saint Laurent",
+      concentration: "EDP",
+      topNotes: ["mandarin", "cyclamen"],
+      heartNotes: ["amaryllis", "clover", "jasmine"],
+      baseNotes: ["amber", "musk", "vanilla", "benzoin"],
+      family: "oriental",
+      description: "A fragrance that plays the leading role. Glamorous, luminous, and larger than life.",
+    },
+    {
+      name: "Idôle L'Intense",
+      house: "Giorgio Armani",
+      concentration: "EDP",
+      topNotes: ["bitter orange", "mandarin"],
+      heartNotes: ["rose", "jasmine", "orange blossom"],
+      baseNotes: ["vanilla", "musk", "patchouli", "cedar"],
+      family: "floral",
+      description: "The confident declaration of feminine power. Luminous, intense, and unforgettable.",
+    },
+    {
+      name: "Miss Dior Blooming Bouquet",
+      house: "Dior",
+      concentration: "EDT",
+      topNotes: ["mandarin", "peach"],
+      heartNotes: ["peony", "damask rose"],
+      baseNotes: ["white musk", "apricot"],
+      family: "floral",
+      description: "Like receiving an armful of fresh flowers. Light, airy, and endlessly romantic.",
+    },
+  ];
+
+  const insertedFragrances = await db.insert(fragrances).values(fragranceData).returning();
+
+  const fragMap: Record<string, string> = {};
+  for (const f of insertedFragrances) {
+    fragMap[f.name] = f.id;
+  }
+
+  const [demoUser] = await db.insert(users).values({
+    username: "velvet.nina",
+    password: "sillage2025",
+    displayName: "Nina",
+    accessCode: "SILLAGE_DEMO",
+    onboardingComplete: true,
+    archetypeId: "velvet-dusk",
+    themePreference: "dark",
+    seasonPreference: "Fall",
+    settingPreferences: ["Going Out", "Occasions"],
+    scentPreferences: ["Warm", "Mysterious", "Bold"],
+    noteLikes: ["oriental", "woody", "floral"],
+    noteDislikes: ["aquatic"],
+    vibeAnswers: {
+      sundayMorning: "Slow coffee & a book",
+      texture: "Velvet",
+      colorEnergy: "Deep jewel tones",
+      showUp: "The mystery",
+      decade: "80s opulent",
+    },
+  }).returning();
+
+  const socialUsers = await db.insert(users).values([
+    { username: "scentedbylayla", password: "demo", displayName: "Layla", accessCode: "SILLAGE_LAYLA", onboardingComplete: true, archetypeId: "baroque-collector" },
+    { username: "greenscents", password: "demo", displayName: "Leo", accessCode: "SILLAGE_DEMO", onboardingComplete: true, archetypeId: "green-wanderer" },
+    { username: "cecifrag", password: "demo", displayName: "Ceci", accessCode: "SILLAGE_DEMO", onboardingComplete: true, archetypeId: "solar-nomad" },
+    { username: "thecanvas.co", password: "demo", displayName: "Jordan", accessCode: "SILLAGE_DEMO", onboardingComplete: true, archetypeId: "clean-canvas" },
+    { username: "fragrancebydan", password: "demo", displayName: "Dan", accessCode: "SILLAGE_DEMO", onboardingComplete: true, archetypeId: "citrus-architect" },
+    { username: "baroque.queen", password: "demo", displayName: "Queen B", accessCode: "SILLAGE_DEMO", onboardingComplete: true, archetypeId: "baroque-collector" },
+    { username: "wanderlust.scent", password: "demo", displayName: "Maya", accessCode: "SCENT_MAYA", onboardingComplete: true, archetypeId: "green-wanderer" },
+  ]).returning();
+
+  const userMap: Record<string, string> = {};
+  userMap["velvet.nina"] = demoUser.id;
+  for (const u of socialUsers) {
+    userMap[u.username] = u.id;
+  }
+
+  await db.insert(vaultItems).values([
+    { userId: demoUser.id, fragranceId: fragMap["YSL Libre"], fillLevel: 75, rating: 5, matchScore: 84, notes: "My go-to for evenings out", wearFrequency: "weekly", bottleSize: "100ml" },
+    { userId: demoUser.id, fragranceId: fragMap["La Vie Est Belle"], fillLevel: 40, rating: 5, matchScore: 91, notes: "Signature scent, always getting compliments", wearFrequency: "daily", bottleSize: "75ml" },
+    { userId: demoUser.id, fragranceId: fragMap["Replica Jazz Club"], fillLevel: 90, rating: 4, matchScore: 78, notes: "Recently discovered, love the smokiness", wearFrequency: "sometimes", bottleSize: "100ml" },
+    { userId: demoUser.id, fragranceId: fragMap["Chance Eau Tendre"], fillLevel: 60, rating: 3, matchScore: 65, notes: "Light everyday option", wearFrequency: "sometimes", bottleSize: "50ml" },
+    { userId: demoUser.id, fragranceId: fragMap["Black Orchid"], fillLevel: 30, rating: 5, matchScore: 88, notes: "My rarest — saving for special occasions only", wearFrequency: "rarely", bottleSize: "50ml" },
+    { userId: demoUser.id, fragranceId: fragMap["Sauvage"], fillLevel: 55, rating: 4, matchScore: 72, notes: "Clean and reliable", wearFrequency: "weekly", bottleSize: "100ml" },
+    { userId: demoUser.id, fragranceId: fragMap["Aventus"], fillLevel: 85, rating: 4, matchScore: 80, notes: "Gift from a friend, very special", wearFrequency: "sometimes", bottleSize: "100ml" },
+    { userId: demoUser.id, fragranceId: fragMap["Peony & Blush Suede"], fillLevel: 20, rating: 4, matchScore: 69, notes: "Almost empty, need to repurchase", wearFrequency: "daily", bottleSize: "30ml" },
   ]);
 
-  console.log("[seed] Seeded 5 access codes and 15 fragrances");
+  const now = new Date();
+  const day = (d: number) => new Date(now.getTime() - d * 86400000);
+
+  await db.insert(wearLogs).values([
+    { userId: demoUser.id, fragranceId: fragMap["La Vie Est Belle"], occasion: "Date Night", notes: "Wore this to my sister's graduation", wornAt: day(0) },
+    { userId: demoUser.id, fragranceId: fragMap["YSL Libre"], occasion: "Going Out", notes: "Girls night — got so many compliments", wornAt: day(1) },
+    { userId: demoUser.id, fragranceId: fragMap["Sauvage"], occasion: "Work", notes: "", wornAt: day(2) },
+    { userId: demoUser.id, fragranceId: fragMap["Replica Jazz Club"], occasion: "Casual", notes: "Rainy day vibes, perfect match", wornAt: day(3) },
+    { userId: demoUser.id, fragranceId: fragMap["Black Orchid"], occasion: "Special Event", notes: "Anniversary dinner", wornAt: day(5) },
+    { userId: demoUser.id, fragranceId: fragMap["La Vie Est Belle"], occasion: "Daily", notes: "", wornAt: day(6) },
+    { userId: demoUser.id, fragranceId: fragMap["Chance Eau Tendre"], occasion: "Work", notes: "Light office choice", wornAt: day(7) },
+    { userId: demoUser.id, fragranceId: fragMap["Aventus"], occasion: "Travel", notes: "Airport duty free energy", wornAt: day(9) },
+    { userId: demoUser.id, fragranceId: fragMap["Peony & Blush Suede"], occasion: "Casual", notes: "Last few sprays from this bottle", wornAt: day(10) },
+    { userId: demoUser.id, fragranceId: fragMap["YSL Libre"], occasion: "Date Night", notes: "Second date scent", wornAt: day(12) },
+  ]);
+
+  await db.insert(toTryItems).values([
+    { userId: demoUser.id, fragranceId: fragMap["Baccarat Rouge 540"], priority: "high", matchScore: 94 },
+    { userId: demoUser.id, fragranceId: fragMap["Gypsy Water"], priority: "high", matchScore: 87 },
+    { userId: demoUser.id, fragranceId: fragMap["Oud Wood"], priority: "curious", matchScore: 83 },
+    { userId: demoUser.id, fragranceId: fragMap["Mon Guerlain"], priority: "curious", matchScore: 79 },
+    { userId: demoUser.id, fragranceId: fragMap["Rose 31"], priority: "someday", matchScore: 76 },
+    { userId: demoUser.id, fragranceId: fragMap["Ambre Sultan"], priority: "high", matchScore: 88 },
+    { userId: demoUser.id, fragranceId: fragMap["Atomic Rose"], priority: "someday", matchScore: 82 },
+    { userId: demoUser.id, fragranceId: fragMap["Delina"], priority: "high", matchScore: 91 },
+  ]);
+
+  await db.insert(feedPosts).values([
+    { userId: userMap["velvet.nina"], type: "review", content: "This is what expensive air smells like. Warm, metallic, completely unforgettable. My signature for the past 6 months.", fragranceId: fragMap["Baccarat Rouge 540"], rating: 5, likeCount: 47 },
+    { userId: userMap["scentedbylayla"], type: "recommendation", content: "Rating every bottle in my vault: the one that surprised me most", fragranceId: fragMap["Replica Jazz Club"], rating: null, likeCount: 128 },
+    { userId: userMap["greenscents"], type: "review", content: "Byredo Gypsy Water in the wild. First wear of fall.", fragranceId: fragMap["Gypsy Water"], rating: 4, likeCount: 33 },
+    { userId: userMap["cecifrag"], type: "recommendation", content: "Dior Sauvage + Jo Malone Wood Sage & Sea Salt. Trust me.", fragranceId: fragMap["Sauvage"], rating: null, likeCount: 89 },
+    { userId: userMap["thecanvas.co"], type: "review", content: "Overrated? Maybe. But I still reach for it every single morning.", fragranceId: fragMap["Santal 33"], rating: 4, likeCount: 56 },
+    { userId: userMap["fragrancebydan"], type: "recommendation", content: "The most underrated summer fragrances of 2025, ranked", fragranceId: fragMap["Light Blue"], rating: null, likeCount: 210 },
+    { userId: userMap["baroque.queen"], type: "review", content: "Tom Ford Black Orchid doing what it does. No further comment.", fragranceId: fragMap["Black Orchid"], rating: 5, likeCount: 74 },
+    { userId: userMap["wanderlust.scent"], type: "review", content: "Smells like a walk through a cedar forest after rain. Absolutely masterful.", fragranceId: fragMap["Terre d'Hermès"], rating: 5, likeCount: 41 },
+  ]);
+
+  console.log("[seed] Seeded 5 access codes, 33 fragrances, 8 users, 8 vault items, 10 wear logs, 8 to-try items, and 8 feed posts");
 }
