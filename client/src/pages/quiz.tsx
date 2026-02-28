@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useSearch } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { getStoredUser, storeUser } from "@/lib/auth";
+import { useTheme } from "@/lib/theme";
 import {
   QUIZ_SEASONS, QUIZ_SETTINGS, QUIZ_SCENT_VIBES,
   QUIZ_NOTE_FAMILIES, QUIZ_VIBES, ARCHETYPES,
   type ArchetypeId,
 } from "@shared/schema";
-
-const TOTAL_STEPS = 5;
 
 const seasonLabels: Record<string, { sub: string }> = {
   Spring: { sub: "Bloom & renewal" },
@@ -18,7 +17,12 @@ const seasonLabels: Record<string, { sub: string }> = {
 };
 
 export default function Quiz() {
+  const search = useSearch();
+  const isRetake = search.includes("retake=true");
+  const TOTAL_STEPS = isRetake ? 5 : 6;
+
   const [step, setStep] = useState(0);
+  const [themeChoice, setThemeChoice] = useState<"light" | "dark">("dark");
   const [season, setSeason] = useState("");
   const [settings, setSettings] = useState<string[]>([]);
   const [scentVibes, setScentVibes] = useState<string[]>([]);
@@ -30,6 +34,7 @@ export default function Quiz() {
   const [revealOpacity, setRevealOpacity] = useState(0);
   const [, setLocation] = useLocation();
   const user = getStoredUser();
+  const { setTheme } = useTheme();
 
   useEffect(() => {
     if (!user) setLocation("/access");
@@ -49,13 +54,17 @@ export default function Quiz() {
     }
   };
 
+  const getActualStep = () => isRetake ? step + 1 : step;
+
   const canProceed = () => {
-    switch (step) {
-      case 0: return !!season;
-      case 1: return settings.length > 0;
-      case 2: return scentVibes.length > 0;
-      case 3: return noteLikes.length > 0 || noteDislikes.length > 0;
-      case 4: return Object.keys(vibeAnswers).length >= 3;
+    const actual = getActualStep();
+    switch (actual) {
+      case 0: return true;
+      case 1: return !!season;
+      case 2: return settings.length > 0;
+      case 3: return scentVibes.length > 0;
+      case 4: return noteLikes.length > 0 || noteDislikes.length > 0;
+      case 5: return Object.keys(vibeAnswers).length >= 3;
       default: return false;
     }
   };
@@ -71,9 +80,11 @@ export default function Quiz() {
         noteLikes,
         noteDislikes,
         vibeAnswers,
+        themePreference: themeChoice,
       });
       const data = await res.json();
       storeUser(data.user);
+      setTheme(themeChoice);
       setRevealArchetype(data.archetypeId);
       setTimeout(() => setRevealOpacity(1), 100);
       setTimeout(() => setLocation("/dashboard"), 4000);
@@ -131,6 +142,8 @@ export default function Quiz() {
     letterSpacing: "0.03em",
   });
 
+  const actualStep = getActualStep();
+
   return (
     <div data-testid="quiz-page" style={{
       position: "fixed", inset: 0, background: "#000",
@@ -148,7 +161,77 @@ export default function Quiz() {
           ))}
         </div>
 
-        {step === 0 && (
+        {actualStep === 0 && (
+          <div data-testid="quiz-step-theme" style={{ animation: "fadeUp 0.6s ease-out" }}>
+            <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "12px", letterSpacing: "0.3em", textTransform: "uppercase", marginBottom: "16px" }}>
+              Welcome to Sillage
+            </p>
+            <h2 style={{ color: "#fff", fontSize: "clamp(24px, 5vw, 34px)", fontWeight: 300, marginBottom: "16px", lineHeight: 1.4 }}>
+              Choose your aesthetic
+            </h2>
+            <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "14px", marginBottom: "40px", lineHeight: 1.6 }}>
+              You can always change this later in your profile.
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <button
+                data-testid="button-theme-light"
+                onClick={() => setThemeChoice("light")}
+                style={{
+                  padding: "32px 20px",
+                  background: themeChoice === "light" ? "rgba(255,248,245,0.12)" : "rgba(255,255,255,0.025)",
+                  border: `1px solid ${themeChoice === "light" ? "rgba(255,248,245,0.35)" : "rgba(255,255,255,0.08)"}`,
+                  borderRadius: "8px", cursor: "pointer",
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: "16px",
+                  transition: "all 0.3s ease",
+                }}
+              >
+                <div style={{
+                  width: "60px", height: "40px", borderRadius: "6px",
+                  background: "linear-gradient(135deg, #FFF8F5, #F5E6DF)",
+                  border: "1px solid rgba(200,180,170,0.3)",
+                }} />
+                <span style={{
+                  fontSize: "15px", fontFamily: "'Cormorant', Georgia, serif",
+                  color: themeChoice === "light" ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.4)",
+                }}>
+                  Light
+                </span>
+                <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.25)", letterSpacing: "0.05em" }}>
+                  Warm, creamy, soft
+                </span>
+              </button>
+              <button
+                data-testid="button-theme-dark"
+                onClick={() => setThemeChoice("dark")}
+                style={{
+                  padding: "32px 20px",
+                  background: themeChoice === "dark" ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.025)",
+                  border: `1px solid ${themeChoice === "dark" ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.08)"}`,
+                  borderRadius: "8px", cursor: "pointer",
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: "16px",
+                  transition: "all 0.3s ease",
+                }}
+              >
+                <div style={{
+                  width: "60px", height: "40px", borderRadius: "6px",
+                  background: "linear-gradient(135deg, #111, #000)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                }} />
+                <span style={{
+                  fontSize: "15px", fontFamily: "'Cormorant', Georgia, serif",
+                  color: themeChoice === "dark" ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.4)",
+                }}>
+                  Dark
+                </span>
+                <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.25)", letterSpacing: "0.05em" }}>
+                  Moody, editorial
+                </span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {actualStep === 1 && (
           <div data-testid="quiz-step-season" style={{ animation: "fadeUp 0.6s ease-out" }}>
             <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "12px", letterSpacing: "0.3em", textTransform: "uppercase", marginBottom: "16px" }}>
               Discover Your Sillage
@@ -172,7 +255,7 @@ export default function Quiz() {
           </div>
         )}
 
-        {step === 1 && (
+        {actualStep === 2 && (
           <div data-testid="quiz-step-settings" style={{ animation: "fadeUp 0.6s ease-out" }}>
             <h2 style={{ color: "#fff", fontSize: "clamp(24px, 5vw, 34px)", fontWeight: 300, marginBottom: "14px", lineHeight: 1.4 }}>
               Where do you reach for fragrance?
@@ -188,7 +271,7 @@ export default function Quiz() {
           </div>
         )}
 
-        {step === 2 && (
+        {actualStep === 3 && (
           <div data-testid="quiz-step-vibes" style={{ animation: "fadeUp 0.6s ease-out" }}>
             <h2 style={{ color: "#fff", fontSize: "clamp(24px, 5vw, 34px)", fontWeight: 300, marginBottom: "14px", lineHeight: 1.4 }}>
               How do you want to smell?
@@ -204,7 +287,7 @@ export default function Quiz() {
           </div>
         )}
 
-        {step === 3 && (
+        {actualStep === 4 && (
           <div data-testid="quiz-step-notes" style={{ animation: "fadeUp 0.6s ease-out" }}>
             <h2 style={{ color: "#fff", fontSize: "clamp(24px, 5vw, 34px)", fontWeight: 300, marginBottom: "14px", lineHeight: 1.4 }}>
               Explore scent families
@@ -262,7 +345,7 @@ export default function Quiz() {
           </div>
         )}
 
-        {step === 4 && (
+        {actualStep === 5 && (
           <div data-testid="quiz-step-identity" style={{ animation: "fadeUp 0.6s ease-out" }}>
             <h2 style={{ color: "#fff", fontSize: "clamp(24px, 5vw, 34px)", fontWeight: 300, marginBottom: "40px", lineHeight: 1.4 }}>
               A few more about you...

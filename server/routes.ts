@@ -202,7 +202,7 @@ export async function registerRoutes(
   });
 
   app.post("/api/users/:id/complete-quiz", async (req, res) => {
-    const { seasonPreference, settingPreferences, scentPreferences, noteLikes, noteDislikes, vibeAnswers } = req.body;
+    const { seasonPreference, settingPreferences, scentPreferences, noteLikes, noteDislikes, vibeAnswers, themePreference } = req.body;
     const updateData: any = {
       seasonPreference,
       settingPreferences,
@@ -212,6 +212,7 @@ export async function registerRoutes(
       vibeAnswers,
       onboardingComplete: true,
     };
+    if (themePreference) updateData.themePreference = themePreference;
     const archetypeId = computeArchetype(updateData);
     updateData.archetypeId = archetypeId;
     const user = await storage.updateUser(req.params.id, updateData);
@@ -239,8 +240,8 @@ export async function registerRoutes(
     const user = await storage.getUser(req.params.userId);
     if (!user) return res.status(404).json({ error: "User not found" });
     const allFragrances = await storage.getFragrances();
-    const vaultItems = await storage.getVaultItems(user.id);
-    const vaultFragIds = new Set(vaultItems.map(v => v.fragranceId));
+    const vaultItemsList = await storage.getVaultItems(user.id);
+    const vaultFragIds = new Set(vaultItemsList.map(v => v.fragranceId));
     const recommendations = allFragrances
       .filter(f => !vaultFragIds.has(f.id))
       .map(f => ({ ...f, matchScore: computeMatchScore(f, user) }))
@@ -309,6 +310,91 @@ export async function registerRoutes(
 
   app.delete("/api/to-try/:id", async (req, res) => {
     await storage.deleteToTryItem(req.params.id);
+    res.json({ success: true });
+  });
+
+  app.get("/api/users/:userId/wear-logs", async (req, res) => {
+    const logs = await storage.getWearLogs(req.params.userId);
+    const fragrancesData = await storage.getFragrances();
+    const fragMap = new Map(fragrancesData.map(f => [f.id, f]));
+    const enriched = logs.map(log => ({ ...log, fragrance: fragMap.get(log.fragranceId) }));
+    res.json(enriched);
+  });
+
+  app.post("/api/users/:userId/wear-logs", async (req, res) => {
+    const { fragranceId, occasion, notes } = req.body;
+    if (!fragranceId) return res.status(400).json({ error: "Fragrance ID required" });
+    const user = await storage.getUser(req.params.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+    const log = await storage.createWearLog({ userId: req.params.userId, fragranceId, occasion, notes });
+    const fragrance = await storage.getFragrance(fragranceId);
+    await storage.createFeedPost({
+      userId: req.params.userId,
+      type: "wear_log",
+      content: occasion ? `Wore this for ${occasion.toLowerCase()}` : "Logged a wear",
+      fragranceId,
+    });
+    res.json({ ...log, fragrance });
+  });
+
+  app.get("/api/feed", async (req, res) => {
+    const posts = await storage.getFeedPosts();
+    const allUsers = await Promise.all(
+      [...new Set(posts.map(p => p.userId))].map(id => storage.getUser(id))
+    );
+    const userMap = new Map(allUsers.filter(Boolean).map(u => [u!.id, u!]));
+    const fragrancesData = await storage.getFragrances();
+    const fragMap = new Map(fragrancesData.map(f => [f.id, f]));
+
+    const requestingUserId = req.query.userId as string | undefined;
+    let userLikes = new Set<string>();
+    if (requestingUserId) {
+      const allLikesForUser = await Promise.all(
+        posts.map(p => storage.getPostLike(p.id, requestingUserId))
+      );
+      allLikesForUser.forEach((like, i) => {
+        if (like) userLikes.add(posts[i].id);
+      });
+    }
+
+    const enriched = posts.map(post => {
+      const postUser = userMap.get(post.userId);
+      return {
+        ...post,
+        user: postUser ? { id: postUser.id, username: postUser.username, displayName: postUser.displayName, archetypeId: postUser.archetypeId } : null,
+        fragrance: post.fragranceId ? fragMap.get(post.fragranceId) : null,
+        liked: userLikes.has(post.id),
+      };
+    });
+    res.json(enriched);
+  });
+
+  app.post("/api/feed", async (req, res) => {
+    const { userId, type, content, fragranceId, rating } = req.body;
+    if (!userId || !type) return res.status(400).json({ error: "User ID and type required" });
+    const post = await storage.createFeedPost({ userId, type, content, fragranceId, rating });
+    res.json(post);
+  });
+
+  app.post("/api/feed/:id/like", async (req, res) => {
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ error: "User ID required" });
+    const existing = await storage.getPostLike(req.params.id, userId);
+    if (existing) {
+      await storage.deletePostLike(req.params.id, userId);
+      await storage.updateFeedPostLikeCount(req.params.id, -1);
+      res.json({ liked: false });
+    } else {
+      await storage.createPostLike({ postId: req.params.id, userId });
+      await storage.updateFeedPostLikeCount(req.params.id, 1);
+      res.json({ liked: true });
+    }
+  });
+
+  app.delete("/api/feed/:id", async (req, res) => {
+    const post = await storage.getFeedPost(req.params.id);
+    if (!post) return res.status(404).json({ error: "Post not found" });
+    await storage.deleteFeedPost(req.params.id);
     res.json({ success: true });
   });
 

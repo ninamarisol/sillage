@@ -4,10 +4,14 @@ import {
   type Fragrance, type InsertFragrance,
   type VaultItem, type InsertVaultItem,
   type ToTryItem, type InsertToTryItem,
+  type WearLog, type InsertWearLog,
+  type FeedPost, type InsertFeedPost,
+  type PostLike, type InsertPostLike,
   users, accessCodes, fragrances, vaultItems, toTryItems,
+  wearLogs, feedPosts, postLikes,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, ilike, or } from "drizzle-orm";
+import { eq, and, ilike, or, desc } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -34,6 +38,19 @@ export interface IStorage {
   createToTryItem(data: InsertToTryItem): Promise<ToTryItem>;
   updateToTryItem(id: string, data: Partial<ToTryItem>): Promise<ToTryItem | undefined>;
   deleteToTryItem(id: string): Promise<void>;
+
+  getWearLogs(userId: string): Promise<WearLog[]>;
+  createWearLog(data: InsertWearLog): Promise<WearLog>;
+
+  getFeedPosts(): Promise<FeedPost[]>;
+  getFeedPost(id: string): Promise<FeedPost | undefined>;
+  createFeedPost(data: InsertFeedPost): Promise<FeedPost>;
+  deleteFeedPost(id: string): Promise<void>;
+  updateFeedPostLikeCount(id: string, delta: number): Promise<void>;
+
+  getPostLike(postId: string, userId: string): Promise<PostLike | undefined>;
+  createPostLike(data: InsertPostLike): Promise<PostLike>;
+  deletePostLike(postId: string, userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -137,6 +154,55 @@ export class DatabaseStorage implements IStorage {
 
   async deleteToTryItem(id: string): Promise<void> {
     await db.delete(toTryItems).where(eq(toTryItems.id, id));
+  }
+
+  async getWearLogs(userId: string): Promise<WearLog[]> {
+    return db.select().from(wearLogs).where(eq(wearLogs.userId, userId)).orderBy(desc(wearLogs.wornAt));
+  }
+
+  async createWearLog(data: InsertWearLog): Promise<WearLog> {
+    const [log] = await db.insert(wearLogs).values(data).returning();
+    return log;
+  }
+
+  async getFeedPosts(): Promise<FeedPost[]> {
+    return db.select().from(feedPosts).orderBy(desc(feedPosts.createdAt));
+  }
+
+  async getFeedPost(id: string): Promise<FeedPost | undefined> {
+    const [post] = await db.select().from(feedPosts).where(eq(feedPosts.id, id));
+    return post;
+  }
+
+  async createFeedPost(data: InsertFeedPost): Promise<FeedPost> {
+    const [post] = await db.insert(feedPosts).values(data).returning();
+    return post;
+  }
+
+  async deleteFeedPost(id: string): Promise<void> {
+    await db.delete(postLikes).where(eq(postLikes.postId, id));
+    await db.delete(feedPosts).where(eq(feedPosts.id, id));
+  }
+
+  async updateFeedPostLikeCount(id: string, delta: number): Promise<void> {
+    const post = await this.getFeedPost(id);
+    if (post) {
+      await db.update(feedPosts).set({ likeCount: Math.max(0, (post.likeCount || 0) + delta) }).where(eq(feedPosts.id, id));
+    }
+  }
+
+  async getPostLike(postId: string, userId: string): Promise<PostLike | undefined> {
+    const [like] = await db.select().from(postLikes).where(and(eq(postLikes.postId, postId), eq(postLikes.userId, userId)));
+    return like;
+  }
+
+  async createPostLike(data: InsertPostLike): Promise<PostLike> {
+    const [like] = await db.insert(postLikes).values(data).returning();
+    return like;
+  }
+
+  async deletePostLike(postId: string, userId: string): Promise<void> {
+    await db.delete(postLikes).where(and(eq(postLikes.postId, postId), eq(postLikes.userId, userId)));
   }
 }
 

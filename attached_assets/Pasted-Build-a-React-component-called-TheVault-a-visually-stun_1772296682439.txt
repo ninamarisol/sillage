@@ -1,0 +1,72 @@
+Build a React component called "TheVault" — a visually stunning, interactive glass perfume shelf 
+display for a luxury fragrance app called Sillage.
+
+VISUAL CONCEPT:
+The shelf should look like a real, lit glass display cabinet — think high-end department store 
+fragrance counter meets personal vanity. Dark, moody background (deep navy #1A1A2E or near-black). 
+The shelves themselves are frosted glass with a subtle light source glowing from beneath each shelf 
+edge, creating that lit-from-within luxury retail look.
+
+SHELF STRUCTURE:
+- 3 horizontal glass shelves stacked vertically, each holding up to 5 bottles
+- Shelves have a glowing bottom edge (soft white or warm gold light using box-shadow/glow effects)
+- Shelf surface has a glass/reflective quality — bottles should appear to have a faint reflection 
+  beneath them on the shelf surface
+- Between shelves, subtle depth shadow to create 3D layering
+
+PERFUME BOTTLES:
+Each bottle in the user's vault is rendered as a unique SVG or CSS-art bottle. Include at least 
+5 distinct bottle silhouettes:
+  - Tall rectangular (think YSL Libre)
+  - Short round flacon (think Chanel No. 5)
+  - Geometric angular (think Killian / Creed)
+  - Rounded oval (think Lancôme La Vie Est Belle)
+  - Wide square flat (think Tom Ford)
+
+Each bottle should have:
+  - A semi-transparent glass body (use rgba fills + slight gradient to mimic glass)
+  - A colored liquid fill inside (color varies by fragrance family: warm amber for orientals, 
+    pale gold for florals, clear/blue for aquatics, deep red for ouds)
+  - A gold or silver cap
+  - The fragrance name as a tiny elegant label on the bottle body (serif font, small)
+  - A subtle reflection/shine streak across the bottle using a thin white diagonal gradient
+  - Fill level visible — the liquid doesn't fill the full bottle, showing how full it is (75%, 50%, etc.)
+
+INTERACTIVITY:
+- Hover over a bottle: it lifts slightly (translateY -8px), a soft glow pulses around it, 
+  and a floating card appears above showing: fragrance name, house, fill %, AI match score 
+  (e.g. "84% match to your profile"), and wear count
+- Click a bottle: opens a detail drawer from the bottom with full bottle info, wear log, 
+  and option to "List on Exchange" or "Log a Wear"
+- "Log a Wear" button triggers a mini spray particle animation — tiny mist particles burst 
+  from the bottle top, then fade
+- Drag bottles between shelf positions to reorder your collection (drag and drop)
+
+AMBIENT DETAILS:
+- Soft animated dust particles floating in the background (very subtle, slow-moving)
+- A warm gradient light source appears to come from above, casting soft bottle shadows downward 
+  onto the shelf
+- Empty shelf slots show a faint dotted outline with a "+" icon to add a new bottle
+- At the top of the component: user's name, their Scent Archetype (e.g. "The Velvet Dusk"), 
+  and total bottle count ("14 bottles in your vault")
+
+SAMPLE DATA:
+Pre-populate with 8 sample bottles:
+  1. YSL Libre EDP — 75% full — amber liquid — 84% match
+  2. Lancôme La Vie Est Belle — 40% full — pale rose liquid — 91% match
+  3. Maison Margiela Replica Jazz Club — 90% full — deep gold liquid — 78% match
+  4. Chanel Chance Eau Tendre — 60% full — champagne liquid — 65% match
+  5. Tom Ford Black Orchid — 30% full — deep burgundy liquid — 88% match
+  6. Dior Sauvage EDP — 55% full — icy blue liquid — 72% match
+  7. Creed Aventus — 85% full — amber liquid — 80% match
+  8. Jo Malone Peony & Blush Suede — 20% full — blush pink liquid — 69% match
+
+TECH REQUIREMENTS:
+- React with hooks (useState, useEffect)
+- All styling via inline styles or Tailwind (no external CSS files needed)
+- SVG bottle art drawn in JSX — no image imports required
+- Framer Motion for the hover lift, drawer slide, and spray particle animation
+- No backend required — all data in a local useState array
+
+The end result should feel like something you'd see in a luxury app prototype reel on Dribbble. 
+Dark, glowing, editorial. Not a list. Not cards. A shelf you want to stare at.

@@ -11,6 +11,7 @@ export const users = pgTable("users", {
   accessCode: text("access_code"),
   onboardingComplete: boolean("onboarding_complete").default(false),
   archetypeId: text("archetype_id"),
+  themePreference: text("theme_preference").default("dark"),
   seasonPreference: text("season_preference"),
   settingPreferences: text("setting_preferences").array(),
   scentPreferences: text("scent_preferences").array(),
@@ -64,6 +65,33 @@ export const toTryItems = pgTable("to_try_items", {
   addedAt: timestamp("added_at").defaultNow(),
 });
 
+export const wearLogs = pgTable("wear_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  fragranceId: varchar("fragrance_id").notNull(),
+  occasion: text("occasion"),
+  notes: text("notes"),
+  wornAt: timestamp("worn_at").defaultNow(),
+});
+
+export const feedPosts = pgTable("feed_posts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  type: text("type").notNull(),
+  content: text("content"),
+  fragranceId: varchar("fragrance_id"),
+  rating: integer("rating"),
+  likeCount: integer("like_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const postLikes = pgTable("post_likes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  postId: varchar("post_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -90,16 +118,38 @@ export const insertToTryItemSchema = createInsertSchema(toTryItems).omit({
   addedAt: true,
 });
 
+export const insertWearLogSchema = createInsertSchema(wearLogs).omit({
+  id: true,
+  wornAt: true,
+});
+
+export const insertFeedPostSchema = createInsertSchema(feedPosts).omit({
+  id: true,
+  likeCount: true,
+  createdAt: true,
+});
+
+export const insertPostLikeSchema = createInsertSchema(postLikes).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type AccessCode = typeof accessCodes.$inferSelect;
 export type Fragrance = typeof fragrances.$inferSelect;
 export type VaultItem = typeof vaultItems.$inferSelect;
 export type ToTryItem = typeof toTryItems.$inferSelect;
+export type WearLog = typeof wearLogs.$inferSelect;
+export type FeedPost = typeof feedPosts.$inferSelect;
+export type PostLike = typeof postLikes.$inferSelect;
 export type InsertAccessCode = z.infer<typeof insertAccessCodeSchema>;
 export type InsertFragrance = z.infer<typeof insertFragranceSchema>;
 export type InsertVaultItem = z.infer<typeof insertVaultItemSchema>;
 export type InsertToTryItem = z.infer<typeof insertToTryItemSchema>;
+export type InsertWearLog = z.infer<typeof insertWearLogSchema>;
+export type InsertFeedPost = z.infer<typeof insertFeedPostSchema>;
+export type InsertPostLike = z.infer<typeof insertPostLikeSchema>;
 
 export const ARCHETYPES = {
   "velvet-dusk": {
@@ -183,3 +233,18 @@ export const QUIZ_VIBES = {
     options: ["70s earthy", "80s opulent", "90s minimalist", "2000s playful", "Timeless"],
   },
 } as const;
+
+export const WEAR_OCCASIONS = ["Daily", "Date Night", "Work", "Special Event", "Travel", "Casual"] as const;
+
+export const FAMILY_COLORS: Record<string, string> = {
+  "Floral": "#E8C4D8",
+  "Woody": "#8B6914",
+  "Citrus": "#FFD700",
+  "Gourmand": "#D2691E",
+  "Aquatic": "#4A90D9",
+  "Oriental": "#C7833E",
+  "Green": "#5B8C5A",
+  "Fresh": "#87CEEB",
+  "Chypre": "#8B7355",
+  "Leather": "#654321",
+};
