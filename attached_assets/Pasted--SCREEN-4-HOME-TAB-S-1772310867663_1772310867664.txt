@@ -1,0 +1,269 @@
+═══════════════════════════════════════
+SCREEN 4: HOME TAB
+═══════════════════════════════════════
+Scrollable. Three sections stacked vertically, accessible by in-page tabs at top:
+  [My Vault]  [Scent Log]  [To Try]
+
+--- HOME: MY VAULT ---
+Header: user's archetype name in small gold text above their username.
+Subtext: "14 bottles in your vault"
+
+THE VAULT DISPLAY — this is the hero visual of the entire app:
+A lit glass display shelf unit. Dark background. 3 horizontal shelves rendered 
+in frosted glass (semi-transparent white border, glowing bottom edge using 
+box-shadow in warm white/gold). Each shelf holds up to 5 bottles.
+
+Each perfume bottle is a unique SVG rendered in JSX. Five distinct silhouettes:
+  A: Tall rectangular art deco (YSL Libre style)
+  B: Short round flacon (Chanel No.5 style)
+  C: Geometric angular faceted (Creed/Killian style)
+  D: Wide oval (Lancôme La Vie est Belle style)
+  E: Flat wide square (Tom Ford style)
+
+Each bottle has:
+  - Semi-transparent glass body with rgba fill + subtle gradient
+  - Colored liquid fill visible inside (fill level reflects % full):
+    amber = orientals, pale gold = florals, icy blue = aquatics, 
+    deep burgundy = dark/oud, blush pink = light florals, clear = fresh
+  - Gold or silver cap SVG on top
+  - Tiny serif label on bottle body with fragrance name
+  - Thin diagonal white gradient "shine" streak across the body
+  - Soft drop shadow beneath bottle on the glass shelf surface (reflection effect)
+
+Shelf ambiance:
+  - Warm light appears to come from above, casting downward shadows
+  - Very subtle slow-drifting dust/bokeh particles in background (pure CSS animation)
+  - Empty slots show faint "+" dotted outline
+
+Bottle interactions:
+  - Hover/tap: bottle lifts (translateY -10px, scale 1.05), gold glow ring appears 
+    around base, floating info card shows: name, house, fill %, AI match score, 
+    wear count
+  - Tap info card: opens bottom drawer with full details — wear log timeline, 
+    "Log a Wear" button (triggers spray particle animation from bottle top), 
+    fill level slider, "List on Exchange" button, "Add to wishlist" button
+
+Pre-populate vault with 8 bottles using these silhouette types and data:
+  1. YSL Libre EDP (A) — 75% — amber — 84% match — 23 wears
+  2. Lancôme La Vie Est Belle (D) — 40% — blush pink — 91% match — 47 wears
+  3. Maison Margiela Replica Jazz Club (C) — 90% — deep gold — 78% match — 12 wears
+  4. Chanel Chance Eau Tendre (B) — 60% — champagne — 65% match — 31 wears
+  5. Tom Ford Black Orchid (E) — 30% — deep burgundy — 88% match — 8 wears
+  6. Dior Sauvage EDP (A) — 55% — icy blue — 72% match — 19 wears
+  7. Creed Aventus (C) — 85% — amber gold — 80% match — 6 wears
+  8. Jo Malone Peony & Blush Suede (B) — 20% — blush — 69% match — 41 wears
+
+--- HOME: SCENT LOG ---
+A chronological timeline of wear logs. Each entry:
+  - Date + time of log
+  - Bottle name + archetype icon
+  - Optional mood tag (user selected at log time): "date night / work / travel / 
+    cozy / going out / just because"
+  - Short note if user added one ("wore this to my sister's graduation 🤍")
+  - Tiny bottle silhouette thumbnail
+
+Show 8-10 sample log entries with varied dates, moods, and notes.
+
+At top: "Log today's scent" quick-action — shows miniature vault grid for user 
+to tap which bottle they're wearing, then select mood, then optionally write a note.
+
+--- HOME: TO TRY ---
+User's fragrance wishlist with AI recommendations blended in.
+
+Display as a vertical list of fragrance cards, each showing:
+  - Fragrance name + house
+  - Note family tags (e.g. "floral / woody / amber")
+  - AI match score as a percentage with a thin circular progress indicator
+  - Priority badge: "High Priority" (gold) / "Curious" (violet) / "Someday" (muted)
+  - Small icon: bell (notify when on Exchange) and heart (saved)
+  - "Match to my vault" button — when tapped, shows a quick breakdown of why 
+    it matches ("Because you love Amber + Woody, similar to your top 3 wears")
+
+Section header: "Recommended for The Velvet Dusk" with AI sparkle icon
+Show 3 AI recommendation cards first, then user's saved items below separated 
+by a "Your Saved" divider.
+
+Sample To-Try list:
+  - Maison Francis Kurkdjian Baccarat Rouge 540 — 94% match — High Priority
+  - Byredo Gypsy Water — 87% match — High Priority  
+  - Tom Ford Oud Wood — 83% match — Curious
+  - Guerlain Mon Guerlain — 79% match — Curious
+  - Le Labo Rose 31 — 76% match — Someday
+  - Serge Lutens Ambre Sultan — 88% match — High Priority (AI rec)
+  - Initio Atomic Rose — 82% match — Someday (AI rec)
+  - Parfums de Marly Delina — 91% match — High Priority (AI rec)
+
+═══════════════════════════════════════
+SCREEN 5: EXPLORE TAB
+═══════════════════════════════════════
+Two sub-tabs at top: [Feed]  [Exchange]
+
+--- EXPLORE: FEED ---
+Social feed. Editorial feel. Dark cards on dark background.
+
+Each post card contains:
+  - Top row: avatar circle (CSS gradient, initials), username in white, 
+    archetype name + archetype color dot (e.g. "The Velvet Dusk ●"), 
+    verified creator badge if applicable (small star icon in gold), 
+    timestamp (e.g. "2h ago")
+  - Post content area: one of these post types —
+      TEXT REVIEW: Fragrance name as bold header, star rating (1-5, gold stars), 
+      written review text (2-4 sentences), note tags as small pills
+      BOTTLE SHOT: tall image placeholder (CSS gradient art — warm/moody, 
+      different per post) with bottle SVG overlaid, caption below
+      TIKTOK EMBED: a mocked TikTok player UI (dark rounded rectangle, 
+      play button center, TikTok logo top right, username + caption overlaid 
+      at bottom in TikTok style, the poster's Sillage archetype shown as a 
+      small overlay badge)
+      LAYERING STACK: two bottle thumbnails shown side by side with a "+" 
+      between them, caption explaining the combo
+  - Bottom row: heart count, comment count, repost count — minimal icon buttons
+  - If post features a fragrance that's in user's To-Try list: small 
+    "In your To-Try ✓" badge on the post
+
+Show 8 sample posts with a mix of all post types, varied users with different 
+archetypes, varied fragrances.
+
+Sample posts:
+  Post 1: @velvet.nina · The Velvet Dusk — TEXT REVIEW of Baccarat Rouge 540 
+    — 5 stars — "This is what expensive air smells like. Warm, metallic, 
+    completely unforgettable. My signature for the past 6 months."
+    Notes: amber / woody / sweet
+  Post 2: @scentedbylayla [CREATOR ★] · The Baroque Collector — TIKTOK EMBED 
+    — "Rating every bottle in my vault: the one that surprised me most 👀"
+  Post 3: @greenscents · The Green Wanderer — BOTTLE SHOT — 
+    "Byredo Gypsy Water in the wild. First wear of fall 🍂"
+  Post 4: @cecifrag · The Solar Nomad — LAYERING STACK — 
+    "Dior Sauvage + Jo Malone Wood Sage & Sea Salt. Trust me."
+  Post 5: @thecanvas.co · The Clean Canvas — TEXT REVIEW of Le Labo Santal 33 
+    — 4 stars — "Overrated? Maybe. But I still reach for it every single morning."
+  Post 6: @fragrancebydan [CREATOR ★] · The Citrus Architect — TIKTOK EMBED 
+    — "The most underrated summer fragrances of 2025, ranked"
+  Post 7: @baroque.queen · The Baroque Collector — BOTTLE SHOT — 
+    "Tom Ford Black Orchid doing what it does. No further comment."
+  Post 8: @wanderlust.scent · The Green Wanderer — TEXT REVIEW of Hermès Terre 
+    — 5 stars — "Smells like a walk through a cedar forest after rain. 
+    Absolutely masterful."
+
+--- EXPLORE: EXCHANGE ---
+The marketplace. Gated behind subscription.
+
+Non-subscriber view (default):
+  Show a blurred/locked version of the Exchange listings behind a frosted glass overlay.
+  Overlay content:
+    Gold lock icon centered.
+    "The Exchange" in large Playfair Display gold serif.
+    "Members only. Buy and sell authenticated luxury fragrance."
+    Two bullet points: "✓ Peer-to-peer authenticated resale" and 
+    "✓ Exclusive L'Oréal discontinued drops"
+    Large CTA button: "Join the Exchange — $9.99/mo" in gold
+    Smaller text: "or $89/yr · Cancel anytime"
+  Behind the overlay (blurred, visible): show a grid of listing cards so users 
+  can see what they're unlocking.
+
+Subscribed view (toggle a useState to simulate subscribed for prototype):
+  Top section: "L'Oréal Drops 🔥" — horizontal scroll of 3 exclusive 
+  discontinued fragrance drop cards, each with:
+    - Fragrance image placeholder (gradient art)
+    - "DISCONTINUED" badge in gold
+    - Name, original retail price, Sillage drop price
+    - "Drop ends in: 23:14:07" countdown timer (animate it counting down)
+    - "Buy Now" button
+
+  Sample drops:
+    Lancôme Trésor Midnight Rose — was $95 — Drop: $67
+    YSL Cinema EDP — was $110 — Drop: $79  
+    Armani Idôle L'Intense — was $85 — Drop: $58
+
+  Main listings grid (2 columns):
+    Each listing card:
+      - Bottle SVG thumbnail
+      - Fragrance name + house
+      - Condition: "~75% full" 
+      - Seller: @username · archetype dot
+      - Price
+      - "Sillage Certified ✓" badge if authenticated
+      - "Match: 84%" if it matches the viewer's profile
+    
+    Sample listings:
+      Chanel No.5 EDP — 80% full — @velvet.nina — $62 — Certified
+      Tom Ford Noir — 60% full — @baroque.queen — $74
+      Byredo Mojave Ghost — 90% full — @greenscents — $88 — Certified
+      Viktor&Rolf Flowerbomb — 45% full — @scentedbylayla — $55
+      Dior Miss Dior Blooming Bouquet — 70% full — @cecifrag — $48 — Certified
+      Maison Margiela Flower Market — 55% full — @thecanvas.co — $71
+    
+  Filter bar above grid: pills for All / Certified / High Match / Under $50 / 
+  Near Full (>75%)
+
+═══════════════════════════════════════
+SCREEN 6: PROFILE TAB
+═══════════════════════════════════════
+User's personal profile page. Scrollable.
+
+TOP SECTION — Identity header:
+  Large circular avatar (CSS gradient, user's initials, outlined in gold)
+  Username: @velvet.nina (white, bold)
+  Archetype badge: "The Velvet Dusk" in violet pill with archetype icon
+  Archetype description: 1-2 sentence evocative description of the archetype
+  Two small text buttons: "Edit Profile" | "Retake Quiz ↺"
+
+STATS ROW — 4 stat blocks in a horizontal row, each showing number + label:
+  Collection: 14 | Wears: 181 | Posts: 23 | Following: 47 | Followers: 312
+
+SCENT DNA SECTION:
+  Header: "Your Scent DNA" with a small DNA helix icon
+  A visualization of the user's top fragrance notes — show as a horizontal 
+  bar chart or stacked pill visualization. Each note family with a fill bar 
+  and percentage:
+    Amber: ████████░░ 78%
+    Woody: ███████░░░ 64%
+    Floral: █████░░░░░ 51%
+    Musk: ████░░░░░░ 43%
+    Citrus: ███░░░░░░░ 31%
+  Color code each note family with a distinct accent color. Label clearly.
+
+PERSONAL STATS SECTION:
+  Header: "Your Fragrance Life"
+  Display as a grid of fun stat cards (2 columns):
+    🕐 "Most worn time" — Evening
+    🌡️ "Fave season" — Autumn
+    💫 "Top house" — YSL
+    🔄 "Avg reapplications/day" — 1.4
+    📅 "Logging streak" — 12 days
+    🏆 "Most worn bottle" — La Vie Est Belle (47 wears)
+    🌙 "Signature mood" — Date Night
+    ✨ "Rarest bottle" — Tom Ford Black Orchid
+
+RECENT POSTS SECTION:
+  Header: "From the Feed"
+  Show user's own posts (2-3) as smaller cards, same format as Feed posts.
+  "View all posts →" text button at bottom.
+
+═══════════════════════════════════════
+STATE MANAGEMENT
+═══════════════════════════════════════
+Use React useState and useContext to manage:
+  - currentScreen (splash / login / quiz / app)
+  - activeTab (home / explore / profile)
+  - homeSubTab (vault / log / totry)
+  - exploreSubTab (feed / exchange)
+  - isSubscribed (boolean, default false — toggle button somewhere in Exchange 
+    to simulate subscribing, for demo purposes)
+  - userArchetype (set after quiz, used across all screens)
+  - quizStep (0-7 for quiz progress)
+  - vaultBottles (array of bottle objects)
+  - toTryList (array)
+  - wearLog (array)
+
+═══════════════════════════════════════
+ANIMATIONS & TRANSITIONS
+═══════════════════════════════════════
+Use Framer Motion throughout:
+  - Screen transitions: fade + subtle translateY (pages slide up into view)
+  - Quiz card selections: scale bounce on tap
+  - Vault bottle hover: lift + glow
+  - Spray animation: particle burst (splash screen + wear log button)
+  - Exchange paywall: frosted glass blur overlay with smooth reveal on subscribe
+  - Bottom nav tab switch: smooth fade between tabs
+  - Drawer open/close: slide up from bottom with backdrop dimming
