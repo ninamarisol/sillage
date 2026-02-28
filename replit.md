@@ -87,9 +87,10 @@ BRANDSTORM, SILLAGE_DEMO, SILLAGE_LAYLA, VAULT_BYRD, SCENT_MAYA
 
 ## Design
 - Pinyon Script (cursive) for headlines/logo
-- Cormorant (serif) for all UI text
+- Cormorant Garamond (serif) for all UI text — loaded via Google Fonts
 - Gold accent: rgba(212,175,55,0.85)
 - Violet accent: rgba(138,100,220,1) for pill buttons
 - Glass shelf with SVG bottles, bokeh particles, warm glow
-- Bottom tab nav with unicode icons
+- Bottom tab nav with unicode icons, gold active state + active indicator bar
 - Minimal borders, glass-morphic cards, slide-up animations
+- Returning user login: no auto-registration, shows error on bad credentials

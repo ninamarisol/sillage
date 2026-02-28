@@ -455,10 +455,10 @@ function GlassShelfVault({ items, onEdit, onDetail, onRemove, onAdd, onLogWear, 
                         </div>
                       </div>
                     )}
-                    <p style={{ fontSize: "10px", color: c.fgLabel, margin: "4px 0 0", textAlign: "center", maxWidth: "68px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <p style={{ fontSize: "11px", color: c.fgLabel, margin: "6px 0 0", textAlign: "center", maxWidth: "70px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>
                       {item.fragrance?.name}
                     </p>
-                    {item.rating ? <span style={{ fontSize: "9px", color: c.goldDim }}>{"\u2605".repeat(item.rating)}</span> : null}
+                    {item.rating ? <span style={{ fontSize: "10px", color: c.goldDim }}>{"\u2605".repeat(item.rating)}</span> : null}
                     <div style={{
                       position: "absolute", bottom: "-2px", width: "50px", height: "6px",
                       background: c.isDark ? `radial-gradient(ellipse, rgba(0,0,0,0.4) 0%, transparent 70%)` : `radial-gradient(ellipse, rgba(0,0,0,0.08) 0%, transparent 70%)`,
@@ -518,11 +518,11 @@ function ScentLogTab({ userId, vaultItems: vitems, c }: { userId: string; vaultI
       <button data-testid="button-log-today"
         onClick={() => setShowQuickLog(!showQuickLog)}
         style={{
-          width: "100%", padding: "16px", marginBottom: "24px",
+          width: "100%", padding: "18px", marginBottom: "28px",
           background: `linear-gradient(135deg, ${c.cardBg}, ${c.violet}08)`,
-          border: `1px solid ${c.violetDim}30`, borderRadius: "12px",
-          color: c.fgMid, fontSize: "14px", cursor: "pointer",
-          fontFamily: "'Cormorant', Georgia, serif", letterSpacing: "0.1em",
+          border: `1px solid ${c.violetDim}30`, borderRadius: "14px",
+          color: c.fgMid, fontSize: "16px", cursor: "pointer",
+          fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "0.12em",
           transition: "all 0.2s",
         }}>
         Log today's scent
@@ -591,7 +591,7 @@ function ScentLogTab({ userId, vaultItems: vitems, c }: { userId: string; vaultI
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px" }}>
-                  <span style={{ fontSize: "15px", fontWeight: 400, color: c.fg }}>{fragName}</span>
+                  <span style={{ fontSize: "17px", fontWeight: 400, color: c.fg }}>{fragName}</span>
                   {log.occasion && (
                     <span style={{ fontSize: "10px", padding: "2px 8px", background: c.chipActive, borderRadius: "10px", color: c.fgSoft }}>
                       {moodIcons[log.occasion] || ""} {log.occasion}
@@ -658,7 +658,7 @@ function ToTryTab({ userId, vaultFragIds, toTryItems: items, onDetail, c }: {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-            <p style={{ fontSize: "17px", margin: 0, fontWeight: 400 }}>{item.fragrance?.name}</p>
+            <p style={{ fontSize: "18px", margin: 0, fontWeight: 400 }}>{item.fragrance?.name}</p>
             {priorityBadge(item.priority)}
           </div>
           <p style={{ color: c.fgLabel, fontSize: "13px", margin: "0 0 8px" }}>{item.fragrance?.house}</p>
@@ -786,10 +786,10 @@ function FeedTab({ userId, c }: { userId: string; c: ReturnType<typeof useColors
 
   return (
     <div data-testid="tab-content-feed" style={{ animation: "fadeUp 0.5s ease-out" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-        <h2 style={{ fontSize: "22px", fontWeight: 300, margin: 0 }}>Feed</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
+        <h2 style={{ fontSize: "26px", fontWeight: 300, margin: 0, letterSpacing: "0.03em" }}>Feed</h2>
         <button data-testid="button-create-post" onClick={() => setShowPostModal(true)}
-          style={{ padding: "8px 16px", background: c.chipActive, border: `1px solid ${c.borderColor}`, borderRadius: "20px", color: c.fgMid, fontSize: "12px", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif", letterSpacing: "0.1em" }}>
+          style={{ padding: "9px 20px", background: c.chipActive, border: `1px solid ${c.borderColor}`, borderRadius: "24px", color: c.fgMid, fontSize: "13px", cursor: "pointer", fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "0.12em", transition: "all 0.2s ease" }}>
           Share
         </button>
       </div>
@@ -955,10 +955,10 @@ function ExchangeTab({ c }: { c: ReturnType<typeof useColors> }) {
           backdropFilter: "blur(4px)", borderRadius: "12px", padding: "40px 24px", textAlign: "center",
         }}>
           <div style={{ fontSize: "40px", marginBottom: "16px", color: c.gold }}>*</div>
-          <h3 style={{ fontFamily: "'Pinyon Script', cursive", fontSize: "32px", color: c.gold, fontWeight: 400, margin: "0 0 8px" }}>The Exchange</h3>
-          <p style={{ color: c.fgSoft, fontSize: "15px", marginBottom: "16px", lineHeight: 1.6 }}>Members only. Buy and sell authenticated luxury fragrance.</p>
-          <p style={{ color: c.fgDim, fontSize: "13px", margin: "0 0 4px" }}>Peer-to-peer authenticated resale</p>
-          <p style={{ color: c.fgDim, fontSize: "13px", margin: "0 0 24px" }}>Exclusive discontinued drops</p>
+          <h3 style={{ fontFamily: "'Pinyon Script', cursive", fontSize: "36px", color: c.gold, fontWeight: 400, margin: "0 0 12px" }}>The Exchange</h3>
+          <p style={{ color: c.fgSoft, fontSize: "17px", marginBottom: "18px", lineHeight: 1.7, fontStyle: "italic" }}>Members only. Buy and sell authenticated luxury fragrance.</p>
+          <p style={{ color: c.fgDim, fontSize: "14px", margin: "0 0 5px" }}>Peer-to-peer authenticated resale</p>
+          <p style={{ color: c.fgDim, fontSize: "14px", margin: "0 0 28px" }}>Exclusive discontinued drops</p>
           <button data-testid="button-join-exchange"
             onClick={() => setIsSubscribed(true)}
             style={{
@@ -1104,23 +1104,24 @@ function ProfileTab({ userId, c }: { userId: string; c: ReturnType<typeof useCol
         }}>
           {(user?.displayName || user?.username || "?").charAt(0).toUpperCase()}
         </div>
-        <p style={{ fontSize: "18px", fontWeight: 400, margin: "0 0 4px", color: c.fg }}>@{user?.username}</p>
+        <p style={{ fontSize: "22px", fontWeight: 400, margin: "0 0 6px", color: c.fg, letterSpacing: "0.02em" }}>@{user?.username}</p>
         {archetype && (
           <>
             <span style={{
-              display: "inline-block", padding: "4px 14px", fontSize: "12px",
+              display: "inline-block", padding: "6px 18px", fontSize: "13px",
               background: `${archetype.color}20`, border: `1px solid ${archetype.color}40`,
-              borderRadius: "20px", color: archetype.color, marginBottom: "8px",
+              borderRadius: "24px", color: archetype.color, marginBottom: "10px",
+              letterSpacing: "0.1em",
             }}>
               {archetype.name}
             </span>
-            <p style={{ color: c.fgSoft, fontSize: "14px", maxWidth: "360px", margin: "8px auto 0", lineHeight: 1.6 }}>{archetype.description}</p>
+            <p style={{ color: c.fgSoft, fontSize: "16px", maxWidth: "360px", margin: "10px auto 0", lineHeight: 1.7, fontStyle: "italic" }}>{archetype.description}</p>
           </>
         )}
         <div style={{ display: "flex", gap: "12px", justifyContent: "center", marginTop: "16px" }}>
-          <button data-testid="button-edit-profile" style={{ padding: "6px 14px", background: "transparent", border: `1px solid ${c.borderColor}`, borderRadius: "20px", color: c.fgDim, fontSize: "12px", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif" }}>Edit Profile</button>
+          <button data-testid="button-edit-profile" style={{ padding: "8px 18px", background: "transparent", border: `1px solid ${c.borderColor}`, borderRadius: "24px", color: c.fgDim, fontSize: "13px", cursor: "pointer", fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "0.08em", transition: "all 0.2s ease" }}>Edit Profile</button>
           <button data-testid="button-retake-quiz" onClick={() => setLocation("/quiz?retake=true")}
-            style={{ padding: "6px 14px", background: "transparent", border: `1px solid ${c.borderColor}`, borderRadius: "20px", color: c.fgDim, fontSize: "12px", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif" }}>Retake Quiz</button>
+            style={{ padding: "8px 18px", background: "transparent", border: `1px solid ${c.borderColor}`, borderRadius: "24px", color: c.fgDim, fontSize: "13px", cursor: "pointer", fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "0.08em", transition: "all 0.2s ease" }}>Retake Quiz</button>
         </div>
       </div>
 
@@ -1133,34 +1134,34 @@ function ProfileTab({ userId, c }: { userId: string; c: ReturnType<typeof useCol
           { n: 312, l: "Followers" },
         ].map(s => (
           <div key={s.l} style={{ textAlign: "center" }}>
-            <p style={{ fontSize: "22px", fontWeight: 300, margin: "0 0 2px", color: c.fg }}>{s.n}</p>
-            <p style={{ fontSize: "11px", color: c.fgDim, letterSpacing: "0.1em", textTransform: "uppercase", margin: 0 }}>{s.l}</p>
+            <p style={{ fontSize: "26px", fontWeight: 300, margin: "0 0 4px", color: c.fg }}>{s.n}</p>
+            <p style={{ fontSize: "12px", color: c.fgDim, letterSpacing: "0.12em", textTransform: "uppercase", margin: 0 }}>{s.l}</p>
           </div>
         ))}
       </div>
 
       <div style={{ marginBottom: "32px" }}>
-        <p style={{ fontSize: "13px", letterSpacing: "0.2em", textTransform: "uppercase", color: c.fgLabel, marginBottom: "16px" }}>Your Scent DNA</p>
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <p style={{ fontSize: "14px", letterSpacing: "0.25em", textTransform: "uppercase", color: c.fgLabel, marginBottom: "20px", fontWeight: 500 }}>Your Scent DNA</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
           {scentDna.map(d => (
-            <div key={d.name} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <span style={{ width: "56px", fontSize: "12px", color: c.fgSoft, textAlign: "right" }}>{d.name}</span>
-              <div style={{ flex: 1, height: "8px", background: c.inputBg, borderRadius: "4px", overflow: "hidden" }}>
-                <div style={{ width: `${d.pct}%`, height: "100%", background: d.color, borderRadius: "4px", transition: "width 0.5s ease" }} />
+            <div key={d.name} style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+              <span style={{ width: "60px", fontSize: "14px", color: c.fgSoft, textAlign: "right", fontWeight: 400 }}>{d.name}</span>
+              <div style={{ flex: 1, height: "10px", background: c.inputBg, borderRadius: "5px", overflow: "hidden" }}>
+                <div style={{ width: `${d.pct}%`, height: "100%", background: `linear-gradient(90deg, ${d.color}cc, ${d.color})`, borderRadius: "5px", transition: "width 0.8s cubic-bezier(0.25,0.1,0.25,1)" }} />
               </div>
-              <span style={{ width: "36px", fontSize: "12px", color: c.fgDim }}>{d.pct}%</span>
+              <span style={{ width: "40px", fontSize: "14px", color: c.fgDim, fontWeight: 400 }}>{d.pct}%</span>
             </div>
           ))}
         </div>
       </div>
 
       <div style={{ marginBottom: "32px" }}>
-        <p style={{ fontSize: "13px", letterSpacing: "0.2em", textTransform: "uppercase", color: c.fgLabel, marginBottom: "16px" }}>Your Fragrance Life</p>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+        <p style={{ fontSize: "14px", letterSpacing: "0.25em", textTransform: "uppercase", color: c.fgLabel, marginBottom: "20px", fontWeight: 500 }}>Your Fragrance Life</p>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
           {funStats.map(s => (
-            <div key={s.label} style={{ background: c.cardBg, border: `1px solid ${c.borderColor}`, borderRadius: "10px", padding: "14px" }}>
-              <p style={{ fontSize: "11px", color: c.fgDim, margin: "0 0 4px", letterSpacing: "0.06em" }}>{s.label}</p>
-              <p style={{ fontSize: "15px", color: c.fg, margin: 0, fontWeight: 400 }}>{s.value}</p>
+            <div key={s.label} style={{ background: c.cardBg, border: `1px solid ${c.borderColor}`, borderRadius: "12px", padding: "16px 18px" }}>
+              <p style={{ fontSize: "12px", color: c.fgDim, margin: "0 0 6px", letterSpacing: "0.08em", textTransform: "uppercase" }}>{s.label}</p>
+              <p style={{ fontSize: "17px", color: c.fg, margin: 0, fontWeight: 400 }}>{s.value}</p>
             </div>
           ))}
         </div>
@@ -1168,7 +1169,7 @@ function ProfileTab({ userId, c }: { userId: string; c: ReturnType<typeof useCol
 
       <div style={{ marginBottom: "32px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-          <p style={{ fontSize: "13px", letterSpacing: "0.2em", textTransform: "uppercase", color: c.fgLabel, margin: 0 }}>Theme</p>
+          <p style={{ fontSize: "14px", letterSpacing: "0.25em", textTransform: "uppercase", color: c.fgLabel, margin: 0, fontWeight: 500 }}>Theme</p>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ fontSize: "12px", color: c.fgDim }}>Light</span>
             <button data-testid="button-theme-toggle"
@@ -1189,7 +1190,7 @@ function ProfileTab({ userId, c }: { userId: string; c: ReturnType<typeof useCol
 
       {myPosts.length > 0 && (
         <div style={{ marginBottom: "32px" }}>
-          <p style={{ fontSize: "13px", letterSpacing: "0.2em", textTransform: "uppercase", color: c.fgLabel, marginBottom: "16px" }}>From the Feed</p>
+          <p style={{ fontSize: "14px", letterSpacing: "0.25em", textTransform: "uppercase", color: c.fgLabel, marginBottom: "16px", fontWeight: 500 }}>From the Feed</p>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {myPosts.slice(0, 3).map(post => (
               <div key={post.id} style={{ background: c.cardBg, border: `1px solid ${c.borderColor}`, borderRadius: "8px", padding: "12px 14px" }}>
@@ -1210,7 +1211,7 @@ function ProfileTab({ userId, c }: { userId: string; c: ReturnType<typeof useCol
           Member since {user?.createdAt ? new Date(user.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : "2025"}
         </p>
         <button data-testid="button-logout" onClick={() => { clearUser(); setLocation("/"); }}
-          style={{ padding: "8px 24px", background: "transparent", border: `1px solid ${c.borderColor}`, borderRadius: "20px", color: c.fgDim, fontSize: "12px", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif", letterSpacing: "0.1em" }}>
+          style={{ padding: "10px 28px", background: "transparent", border: `1px solid ${c.borderColor}`, borderRadius: "24px", color: c.fgDim, fontSize: "14px", cursor: "pointer", fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "0.12em", transition: "all 0.2s ease" }}>
           Log Out
         </button>
       </div>
@@ -1287,12 +1288,12 @@ export default function Dashboard() {
   const wearLogFragName = wearLogFragId ? (vaultItems.find(v => v.fragranceId === wearLogFragId)?.fragrance?.name || "Fragrance") : "";
 
   const subTabStyle = (active: boolean) => ({
-    padding: "10px 0", background: "transparent", border: "none",
-    borderBottom: active ? `2px solid ${c.fgSoft}` : "2px solid transparent",
-    color: active ? c.fgStrong : c.fgDim, fontSize: "13px",
-    letterSpacing: "0.12em", textTransform: "uppercase" as const,
-    cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif",
-    transition: "all 0.3s ease", flex: 1, fontWeight: active ? 500 : 400,
+    padding: "12px 0", background: "transparent", border: "none",
+    borderBottom: active ? `2px solid ${c.gold}` : "2px solid transparent",
+    color: active ? c.fgStrong : c.fgDim, fontSize: "15px",
+    letterSpacing: "0.18em", textTransform: "uppercase" as const,
+    cursor: "pointer", fontFamily: "'Cormorant Garamond', Georgia, serif",
+    transition: "all 0.3s ease", flex: 1, fontWeight: active ? 600 : 400,
   });
 
   const bottomNavIcon = (tab: MainTab, label: string) => {
@@ -1302,36 +1303,46 @@ export default function Dashboard() {
       <button key={tab} data-testid={`nav-${tab}`}
         onClick={() => setMainTab(tab)}
         style={{
-          flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px",
-          background: "none", border: "none", cursor: "pointer", padding: "8px 0",
-          color: active ? c.fg : c.fgDim, transition: "color 0.2s",
+          flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "5px",
+          background: "none", border: "none", cursor: "pointer", padding: "10px 0 6px",
+          color: active ? c.gold : c.fgDim, transition: "all 0.3s ease",
+          position: "relative",
         }}>
-        <span style={{ fontSize: "20px" }}>{icons[tab]}</span>
-        <span style={{ fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: "'Cormorant', Georgia, serif" }}>{label}</span>
+        <span style={{ fontSize: "22px", transition: "transform 0.3s ease", transform: active ? "scale(1.15)" : "scale(1)" }}>{icons[tab]}</span>
+        <span style={{ fontSize: "11px", letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: active ? 600 : 400 }}>{label}</span>
+        {active && <span style={{ position: "absolute", top: "-1px", left: "50%", transform: "translateX(-50%)", width: "24px", height: "2px", background: c.gold, borderRadius: "2px" }} />}
       </button>
     );
   };
 
   return (
-    <div data-testid="dashboard-page" style={{ minHeight: "100vh", background: c.bg, fontFamily: "'Cormorant', Georgia, serif", color: c.fg }}>
-      <header style={{ padding: "16px clamp(20px, 5vw, 40px)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <h1 style={{ fontFamily: "'Pinyon Script', cursive", fontSize: "26px", fontWeight: 400, margin: 0, color: c.gold }}>Sillage</h1>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+    <div data-testid="dashboard-page" style={{ minHeight: "100vh", background: c.bg, fontFamily: "'Cormorant Garamond', 'Cormorant', Georgia, serif", color: c.fg }}>
+      <header style={{ padding: "20px clamp(20px, 5vw, 40px) 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <h1 style={{ fontFamily: "'Pinyon Script', cursive", fontSize: "32px", fontWeight: 400, margin: 0, color: c.gold, letterSpacing: "0.02em" }}>Sillage</h1>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           {archetype && (
-            <span style={{ fontSize: "11px", color: c.goldDim, letterSpacing: "0.06em" }}>{archetype.name}</span>
+            <span style={{ fontSize: "12px", color: archetype.color, letterSpacing: "0.08em", opacity: 0.7 }}>{archetype.name}</span>
           )}
-          <span style={{ color: c.fgLabel, fontSize: "14px" }}>{user.displayName || user.username}</span>
+          <div style={{
+            width: "34px", height: "34px", borderRadius: "50%",
+            background: archetype ? `linear-gradient(135deg, ${archetype.color}40, ${archetype.color}15)` : c.cardBg,
+            border: `1.5px solid ${c.gold}40`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: "15px", fontFamily: "'Pinyon Script', cursive", color: c.fg,
+          }}>
+            {(user.displayName || user.username || "?").charAt(0).toUpperCase()}
+          </div>
         </div>
       </header>
 
       <main style={{ padding: "0 clamp(16px, 4vw, 40px) 100px", maxWidth: "720px", margin: "0 auto" }}>
         {mainTab === "home" && (
           <>
-            <div style={{ marginBottom: "8px", textAlign: "center" }}>
+            <div style={{ marginBottom: "12px", textAlign: "center" }}>
               {archetype && (
-                <p style={{ fontSize: "12px", color: c.goldDim, letterSpacing: "0.15em", margin: "0 0 2px" }}>{archetype.name}</p>
+                <p style={{ fontSize: "13px", color: c.goldDim, letterSpacing: "0.2em", textTransform: "uppercase", margin: "0 0 6px", fontWeight: 500 }}>{archetype.name}</p>
               )}
-              <p style={{ fontSize: "14px", color: c.fgSoft, margin: 0 }}>{vaultItems.length} bottles in your vault</p>
+              <p style={{ fontSize: "16px", color: c.fgSoft, margin: 0, fontStyle: "italic" }}>{vaultItems.length} bottles in your vault</p>
             </div>
 
             <nav style={{ display: "flex", borderBottom: `1px solid ${c.borderSoft}`, marginBottom: "24px" }}>
@@ -1344,7 +1355,7 @@ export default function Dashboard() {
               <div style={{ animation: "fadeUp 0.5s ease-out" }}>
                 <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "8px" }}>
                   <button data-testid="button-add-to-vault" onClick={() => setShowAddModal(true)}
-                    style={{ padding: "6px 14px", background: c.chipActive, border: `1px solid ${c.borderColor}`, borderRadius: "20px", color: c.fgMid, fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif" }}>+ Add</button>
+                    style={{ padding: "8px 18px", background: c.chipActive, border: `1px solid ${c.borderColor}`, borderRadius: "24px", color: c.fgMid, fontSize: "13px", letterSpacing: "0.15em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'Cormorant Garamond', Georgia, serif", transition: "all 0.2s ease" }}>+ Add</button>
                 </div>
                 <GlassShelfVault
                   items={vaultItems}
@@ -1387,11 +1398,12 @@ export default function Dashboard() {
 
       <nav data-testid="bottom-nav" style={{
         position: "fixed", bottom: 0, left: 0, right: 0,
-        background: c.isDark ? "rgba(0,0,0,0.95)" : "rgba(255,248,245,0.95)",
-        backdropFilter: "blur(12px)",
-        borderTop: `1px solid ${c.borderSoft}`,
-        display: "flex", padding: "6px 0 env(safe-area-inset-bottom, 8px)",
+        background: c.isDark ? "rgba(6,6,6,0.97)" : "rgba(255,252,250,0.97)",
+        backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
+        borderTop: `1px solid ${c.isDark ? "rgba(212,175,55,0.1)" : "rgba(0,0,0,0.06)"}`,
+        display: "flex", padding: "4px 0 env(safe-area-inset-bottom, 10px)",
         zIndex: 50,
+        boxShadow: c.isDark ? "0 -4px 24px rgba(0,0,0,0.5)" : "0 -2px 16px rgba(0,0,0,0.04)",
       }}>
         {bottomNavIcon("home", "Home")}
         {bottomNavIcon("explore", "Explore")}

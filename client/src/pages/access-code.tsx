@@ -46,45 +46,51 @@ export default function AccessCode() {
       const res = await apiRequest("POST", "/api/auth/login", { username: email.trim(), password });
       const data = await res.json();
       storeUser(data.user);
-      setLocation("/dashboard");
-    } catch {
-      try {
-        const res = await apiRequest("POST", "/api/auth/register", {
-          username: email.trim(),
-          password,
-          displayName: email.split("@")[0] || email.trim(),
-          accessCode: "SILLAGE_DEMO",
-        });
-        const data = await res.json();
-        storeUser(data.user);
+      if (data.user.onboardingComplete) {
         setLocation("/dashboard");
-      } catch {
-        setError("Something went wrong. Try again.");
+      } else {
+        setLocation("/quiz");
       }
+    } catch {
+      setError("Account not found. Check your credentials or sign up with a code.");
     } finally {
       setLoading(false);
     }
   };
 
+  const violet = "rgba(138,100,220,1)";
+  const violetDim = "rgba(138,100,220,0.35)";
+  const gold = "rgba(212,175,55,1)";
+
   const inputStyle: React.CSSProperties = {
     width: "100%",
-    padding: "16px 20px",
+    padding: "18px 24px",
     background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(255,255,255,0.12)",
+    border: "1px solid rgba(255,255,255,0.1)",
     borderRadius: "40px",
     color: "#ffffff",
-    fontSize: "15px",
+    fontSize: "16px",
     letterSpacing: "0.03em",
     outline: "none",
-    fontFamily: "'Cormorant', Georgia, serif",
+    fontFamily: "'Cormorant Garamond', Georgia, serif",
     boxSizing: "border-box",
     transition: "border-color 0.3s ease",
     textAlign: "center",
   };
 
-  const violet = "rgba(138,100,220,1)";
-  const violetDim = "rgba(138,100,220,0.4)";
-  const gold = "rgba(212,175,55,1)";
+  const pillBtn = (filled: boolean): React.CSSProperties => ({
+    width: "100%",
+    padding: "18px 28px",
+    background: filled ? violet : "transparent",
+    border: `1.5px solid ${filled ? violet : violetDim}`,
+    borderRadius: "40px",
+    color: filled ? "#fff" : "rgba(255,255,255,0.7)",
+    fontSize: "17px",
+    letterSpacing: "0.04em",
+    cursor: "pointer",
+    fontFamily: "'Cormorant Garamond', Georgia, serif",
+    transition: "all 0.3s ease",
+  });
 
   return (
     <div
@@ -97,68 +103,45 @@ export default function AccessCode() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        fontFamily: "'Cormorant', Georgia, serif",
+        fontFamily: "'Cormorant Garamond', Georgia, serif",
         overflow: "auto",
       }}
     >
-      <div style={{ textAlign: "center", width: "min(400px, 85vw)", animation: "fadeUp 0.6s ease-out" }}>
+      <div style={{ textAlign: "center", width: "min(420px, 88vw)", animation: "fadeUp 0.7s ease-out" }}>
         <h1 style={{
           color: gold,
           fontFamily: "'Pinyon Script', cursive",
-          fontSize: "clamp(42px, 10vw, 64px)",
-          marginBottom: "8px",
+          fontSize: "clamp(48px, 12vw, 72px)",
+          marginBottom: "10px",
           fontWeight: 400,
+          lineHeight: 1,
         }}>
           Sillage
         </h1>
         <p style={{
-          color: "rgba(255,255,255,0.4)",
-          fontSize: "15px",
+          color: "rgba(255,255,255,0.35)",
+          fontSize: "17px",
           fontStyle: "italic",
-          letterSpacing: "0.06em",
-          marginBottom: "56px",
-          fontFamily: "'Cormorant', Georgia, serif",
+          letterSpacing: "0.08em",
+          marginBottom: "64px",
+          lineHeight: 1.6,
         }}>
           The luxury fragrance vault.
         </p>
 
         {flow === "choose" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px", animation: "fadeUp 0.5s ease-out" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px", animation: "fadeUp 0.5s ease-out" }}>
             <button
               data-testid="button-new-user"
               onClick={() => { setFlow("new"); setError(""); }}
-              style={{
-                width: "100%",
-                padding: "16px 24px",
-                background: "transparent",
-                border: `1.5px solid ${violetDim}`,
-                borderRadius: "40px",
-                color: "rgba(255,255,255,0.75)",
-                fontSize: "15px",
-                letterSpacing: "0.06em",
-                cursor: "pointer",
-                fontFamily: "'Cormorant', Georgia, serif",
-                transition: "all 0.3s ease",
-              }}
+              style={pillBtn(false)}
             >
-              I'm new — I have a code
+              I'm new &mdash; I have a code
             </button>
             <button
               data-testid="button-returning-user"
               onClick={() => { setFlow("returning"); setError(""); }}
-              style={{
-                width: "100%",
-                padding: "16px 24px",
-                background: violet,
-                border: `1.5px solid ${violet}`,
-                borderRadius: "40px",
-                color: "#ffffff",
-                fontSize: "15px",
-                letterSpacing: "0.06em",
-                cursor: "pointer",
-                fontFamily: "'Cormorant', Georgia, serif",
-                transition: "all 0.3s ease",
-              }}
+              style={pillBtn(true)}
             >
               Welcome back
             </button>
@@ -177,18 +160,17 @@ export default function AccessCode() {
               style={inputStyle}
             />
             <p style={{
-              color: "rgba(255,255,255,0.25)",
-              fontSize: "12px",
-              marginTop: "14px",
-              marginBottom: "28px",
-              lineHeight: 1.7,
-              letterSpacing: "0.04em",
+              color: "rgba(255,255,255,0.22)",
+              fontSize: "14px",
+              marginTop: "16px",
+              marginBottom: "32px",
+              lineHeight: 1.8,
             }}>
               Codes are distributed by FragranceTok creators you love.
             </p>
 
             {error && (
-              <p data-testid="text-error" style={{ color: "rgba(200,80,80,0.8)", fontSize: "13px", marginBottom: "14px" }}>
+              <p data-testid="text-error" style={{ color: "rgba(220,80,80,0.85)", fontSize: "15px", marginBottom: "16px", lineHeight: 1.5 }}>
                 {error}
               </p>
             )}
@@ -198,32 +180,19 @@ export default function AccessCode() {
               onClick={handleNewUser}
               disabled={loading || !code.trim()}
               style={{
-                width: "100%",
-                padding: "16px",
-                background: code.trim() ? violet : "rgba(255,255,255,0.03)",
-                border: `1px solid ${code.trim() ? violet : "rgba(255,255,255,0.08)"}`,
-                borderRadius: "40px",
-                color: code.trim() ? "#fff" : "rgba(255,255,255,0.25)",
-                fontSize: "14px",
-                letterSpacing: "0.12em",
+                ...pillBtn(!!code.trim()),
+                opacity: code.trim() ? 1 : 0.3,
                 cursor: code.trim() ? "pointer" : "default",
-                fontFamily: "'Cormorant', Georgia, serif",
-                transition: "all 0.3s ease",
-                marginBottom: "20px",
+                marginBottom: "24px",
               }}
             >
-              {loading ? "..." : "Enter the vault \u2192"}
+              {loading ? "Verifying..." : "Enter the vault"}
             </button>
 
             <p
               data-testid="button-back-choose"
               onClick={() => { setFlow("choose"); setError(""); }}
-              style={{
-                color: "rgba(255,255,255,0.25)",
-                fontSize: "13px",
-                cursor: "pointer",
-                letterSpacing: "0.06em",
-              }}
+              style={{ color: "rgba(255,255,255,0.22)", fontSize: "15px", cursor: "pointer", letterSpacing: "0.06em" }}
             >
               Back
             </p>
@@ -235,10 +204,10 @@ export default function AccessCode() {
             <input
               data-testid="input-email"
               type="text"
-              placeholder="Email or username"
+              placeholder="Username"
               value={email}
               onChange={e => { setEmail(e.target.value); setError(""); }}
-              style={{ ...inputStyle, marginBottom: "14px" }}
+              style={{ ...inputStyle, marginBottom: "12px" }}
             />
             <input
               data-testid="input-password"
@@ -251,7 +220,7 @@ export default function AccessCode() {
             />
 
             {error && (
-              <p data-testid="text-error" style={{ color: "rgba(200,80,80,0.8)", fontSize: "13px", marginTop: "14px" }}>
+              <p data-testid="text-error" style={{ color: "rgba(220,80,80,0.85)", fontSize: "15px", marginTop: "16px", lineHeight: 1.5 }}>
                 {error}
               </p>
             )}
@@ -261,33 +230,20 @@ export default function AccessCode() {
               onClick={handleReturningUser}
               disabled={loading || !email.trim() || !password.trim()}
               style={{
-                width: "100%",
-                padding: "16px",
-                background: (email.trim() && password.trim()) ? violet : "rgba(255,255,255,0.03)",
-                border: `1px solid ${(email.trim() && password.trim()) ? violet : "rgba(255,255,255,0.08)"}`,
-                borderRadius: "40px",
-                color: (email.trim() && password.trim()) ? "#fff" : "rgba(255,255,255,0.25)",
-                fontSize: "14px",
-                letterSpacing: "0.12em",
+                ...pillBtn(!!(email.trim() && password.trim())),
+                opacity: (email.trim() && password.trim()) ? 1 : 0.3,
                 cursor: (email.trim() && password.trim()) ? "pointer" : "default",
-                fontFamily: "'Cormorant', Georgia, serif",
-                transition: "all 0.3s ease",
-                marginTop: "24px",
-                marginBottom: "20px",
+                marginTop: "28px",
+                marginBottom: "24px",
               }}
             >
-              {loading ? "..." : "Enter \u2192"}
+              {loading ? "Signing in..." : "Enter"}
             </button>
 
             <p
               data-testid="button-back-choose"
               onClick={() => { setFlow("choose"); setError(""); }}
-              style={{
-                color: "rgba(255,255,255,0.25)",
-                fontSize: "13px",
-                cursor: "pointer",
-                letterSpacing: "0.06em",
-              }}
+              style={{ color: "rgba(255,255,255,0.22)", fontSize: "15px", cursor: "pointer", letterSpacing: "0.06em" }}
             >
               Back
             </p>
@@ -301,7 +257,8 @@ export default function AccessCode() {
           to { opacity: 1; transform: translateY(0); }
         }
         body { margin: 0; background: #000 !important; }
-        input::placeholder { color: rgba(255,255,255,0.2); }
+        input::placeholder { color: rgba(255,255,255,0.18); }
+        input:focus { border-color: rgba(138,100,220,0.5) !important; }
       `}</style>
     </div>
   );
