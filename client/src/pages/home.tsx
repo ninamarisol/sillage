@@ -1,27 +1,22 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 
-const SCROLL_HEIGHT_MULTIPLIER = 8;
-
-function easeInOutCubic(t: number): number {
-  return t < 0.5
-    ? 4 * t * t * t
-    : 1 - Math.pow(-2 * t + 2, 3) / 2;
-}
+const FPS = 30;
+const FRAME_INTERVAL = 1000 / FPS;
+const HEADLINE_THRESHOLD = 0.6;
 
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const currentFrameRef = useRef(0);
-  const animationFrameRef = useRef<number>(0);
-  const targetFrameRef = useRef(0);
-  const isAnimatingRef = useRef(false);
   const totalFramesRef = useRef(0);
+  const isHoldingRef = useRef(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [currentFrame, setCurrentFrame] = useState(0);
+  const [isHolding, setIsHolding] = useState(false);
 
   const drawFrame = useCallback((frameIndex: number) => {
     const canvas = canvasRef.current;
@@ -69,29 +64,31 @@ export default function Home() {
     ctx.drawImage(img, drawX, drawY, drawW, drawH);
   }, []);
 
-  const startAnimationLoop = useCallback(() => {
-    if (isAnimatingRef.current) return;
-    isAnimatingRef.current = true;
+  const startPlayback = useCallback(() => {
+    if (intervalRef.current) return;
+    isHoldingRef.current = true;
+    setIsHolding(true);
 
-    const animate = () => {
-      const target = targetFrameRef.current;
-      const current = currentFrameRef.current;
-      const diff = Math.abs(target - current);
-
-      if (diff > 0.3) {
-        const next = current + (target - current) * 0.15;
-        currentFrameRef.current = next;
-        drawFrame(Math.round(next));
-        animationFrameRef.current = requestAnimationFrame(animate);
+    intervalRef.current = setInterval(() => {
+      const totalFrames = totalFramesRef.current;
+      if (currentFrameRef.current < totalFrames - 1) {
+        currentFrameRef.current++;
+        setCurrentFrame(currentFrameRef.current);
+        drawFrame(currentFrameRef.current);
       } else {
-        currentFrameRef.current = target;
-        drawFrame(target);
-        isAnimatingRef.current = false;
+        stopPlayback();
       }
-    };
-
-    animationFrameRef.current = requestAnimationFrame(animate);
+    }, FRAME_INTERVAL);
   }, [drawFrame]);
+
+  const stopPlayback = useCallback(() => {
+    isHoldingRef.current = false;
+    setIsHolding(false);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  }, []);
 
   useEffect(() => {
     const fetchAndLoad = async () => {
@@ -145,45 +142,27 @@ export default function Home() {
 
   useEffect(() => {
     if (!isLoaded) return;
-
     drawFrame(0);
 
-    const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-      if (maxScroll <= 0) return;
-      const rawProgress = Math.min(Math.max(scrollTop / maxScroll, 0), 1);
-      const easedProgress = easeInOutCubic(rawProgress);
-
-      setScrollProgress(rawProgress);
-
-      const totalFrames = totalFramesRef.current;
-      const frameIndex = Math.min(
-        Math.floor(easedProgress * (totalFrames - 1)),
-        totalFrames - 1
-      );
-      targetFrameRef.current = frameIndex;
-      startAnimationLoop();
-    };
-
     const handleResize = () => {
-      drawFrame(Math.round(currentFrameRef.current));
+      drawFrame(currentFrameRef.current);
     };
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleResize);
-
     return () => {
-      window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
-      cancelAnimationFrame(animationFrameRef.current);
-      isAnimatingRef.current = false;
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
     };
-  }, [isLoaded, drawFrame, startAnimationLoop]);
+  }, [isLoaded, drawFrame]);
 
-  const headlineOpacity = scrollProgress >= 0.55 && scrollProgress <= 0.85
-    ? Math.min((scrollProgress - 0.55) / 0.1, 1) * (1 - Math.max((scrollProgress - 0.75) / 0.1, 0))
+  const progress = totalFramesRef.current > 0 ? currentFrame / (totalFramesRef.current - 1) : 0;
+  const showHeadline = progress >= HEADLINE_THRESHOLD;
+  const headlineOpacity = showHeadline
+    ? Math.min((progress - HEADLINE_THRESHOLD) / 0.12, 1)
     : 0;
+  const atEnd = totalFramesRef.current > 0 && currentFrame >= totalFramesRef.current - 1;
 
   if (loadError) {
     return (
@@ -197,7 +176,7 @@ export default function Home() {
           justifyContent: "center",
           background: "#000000",
           color: "rgba(255,255,255,0.5)",
-          fontFamily: "'Playfair Display', Georgia, serif",
+          fontFamily: "'Cormorant', Georgia, serif",
           fontSize: "14px",
           letterSpacing: "0.1em",
         }}
@@ -209,11 +188,15 @@ export default function Home() {
 
   return (
     <div
-      ref={containerRef}
-      data-testid="scroll-container"
+      data-testid="main-container"
       style={{
-        height: isLoaded ? `${100 * SCROLL_HEIGHT_MULTIPLIER}vh` : "100vh",
+        position: "fixed",
+        inset: 0,
         background: "#000000",
+        overflow: "hidden",
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        touchAction: "none",
       }}
     >
       {!isLoaded && (
@@ -235,7 +218,7 @@ export default function Home() {
               style={{
                 width: "100%",
                 height: "2px",
-                background: "rgba(255,255,255,0.1)",
+                background: "rgba(255,255,255,0.08)",
                 borderRadius: "1px",
                 overflow: "hidden",
               }}
@@ -245,7 +228,7 @@ export default function Home() {
                 style={{
                   height: "100%",
                   width: `${loadingProgress}%`,
-                  background: "rgba(255,255,255,0.8)",
+                  background: "rgba(255,255,255,0.7)",
                   borderRadius: "1px",
                   transition: "width 0.3s ease-out",
                 }}
@@ -255,11 +238,11 @@ export default function Home() {
           <span
             data-testid="loading-text"
             style={{
-              color: "rgba(255,255,255,0.4)",
+              color: "rgba(255,255,255,0.35)",
               fontSize: "11px",
-              letterSpacing: "0.2em",
+              letterSpacing: "0.25em",
               textTransform: "uppercase",
-              fontFamily: "'Playfair Display', Georgia, serif",
+              fontFamily: "'Cormorant', Georgia, serif",
             }}
           >
             {loadingProgress}%
@@ -284,99 +267,126 @@ export default function Home() {
       />
 
       <div
-        data-testid="headline-presence"
+        data-testid="headline-sillage"
         style={{
           position: "fixed",
-          bottom: "12%",
+          bottom: "14%",
           left: 0,
           right: 0,
           textAlign: "center",
           zIndex: 10,
           pointerEvents: "none",
           opacity: headlineOpacity,
-          transform: `translateY(${(1 - headlineOpacity) * 20}px)`,
-          transition: "transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1)",
+          transform: `translateY(${(1 - headlineOpacity) * 30}px)`,
+          transition: "opacity 1.2s cubic-bezier(0.25, 0.1, 0.25, 1), transform 1.4s cubic-bezier(0.25, 0.1, 0.25, 1)",
         }}
       >
         <h1
           style={{
             color: "#ffffff",
-            fontFamily: "'Playfair Display', Georgia, serif",
+            fontFamily: "'Pinyon Script', cursive",
             fontWeight: 400,
-            fontSize: "clamp(24px, 4vw, 56px)",
-            letterSpacing: "0.12em",
+            fontSize: "clamp(36px, 7vw, 80px)",
+            letterSpacing: "0.04em",
             margin: 0,
-            textShadow: "0 2px 40px rgba(0,0,0,0.6)",
+            textShadow: "0 2px 60px rgba(0,0,0,0.5)",
           }}
         >
-          Presence.
+          Sillage
         </h1>
       </div>
 
-      {isLoaded && (
+      {isLoaded && !atEnd && (
         <div
-          data-testid="scroll-hint"
+          data-testid="hold-button-container"
           style={{
             position: "fixed",
-            bottom: "24px",
+            bottom: "clamp(32px, 6vh, 64px)",
             left: "50%",
             transform: "translateX(-50%)",
-            zIndex: 10,
-            opacity: scrollProgress < 0.05 ? 1 : 0,
-            transition: "opacity 0.6s ease-out",
-            pointerEvents: "none",
+            zIndex: 20,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: "8px",
+            gap: "12px",
           }}
         >
-          <span
+          <button
+            data-testid="hold-button"
+            onMouseDown={startPlayback}
+            onMouseUp={stopPlayback}
+            onMouseLeave={stopPlayback}
+            onTouchStart={(e) => { e.preventDefault(); startPlayback(); }}
+            onTouchEnd={stopPlayback}
+            onTouchCancel={stopPlayback}
             style={{
-              color: "rgba(255,255,255,0.35)",
+              width: "64px",
+              height: "64px",
+              borderRadius: "50%",
+              border: "1.5px solid rgba(255,255,255,0.25)",
+              background: isHolding ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "background 0.3s ease, border-color 0.3s ease, transform 0.2s ease",
+              animation: isHolding ? "none" : "buttonPulse 2.5s ease-in-out infinite",
+              transform: isHolding ? "scale(0.92)" : "scale(1)",
+              outline: "none",
+              padding: 0,
+            }}
+          >
+            <div
+              style={{
+                width: "24px",
+                height: "24px",
+                borderRadius: "50%",
+                background: isHolding
+                  ? "rgba(255,255,255,0.5)"
+                  : "rgba(255,255,255,0.2)",
+                transition: "background 0.3s ease, transform 0.2s ease",
+                transform: isHolding ? "scale(0.85)" : "scale(1)",
+              }}
+            />
+          </button>
+          <span
+            data-testid="hold-label"
+            style={{
+              color: "rgba(255,255,255,0.3)",
               fontSize: "10px",
               letterSpacing: "0.3em",
               textTransform: "uppercase",
-              fontFamily: "'Playfair Display', Georgia, serif",
+              fontFamily: "'Cormorant', Georgia, serif",
+              opacity: isHolding ? 0 : 1,
+              transition: "opacity 0.4s ease",
             }}
           >
-            Scroll
+            Hold
           </span>
-          <div
-            style={{
-              width: "1px",
-              height: "32px",
-              background: "linear-gradient(to bottom, rgba(255,255,255,0.3), rgba(255,255,255,0))",
-              animation: "scrollPulse 2s ease-in-out infinite",
-            }}
-          />
         </div>
       )}
 
       <style>{`
-        @keyframes scrollPulse {
-          0%, 100% { opacity: 0.4; transform: scaleY(1); }
-          50% { opacity: 1; transform: scaleY(1.2); }
+        @keyframes buttonPulse {
+          0%, 100% {
+            box-shadow: 0 0 0 0 rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.2);
+          }
+          50% {
+            box-shadow: 0 0 0 12px rgba(255,255,255,0);
+            border-color: rgba(255,255,255,0.35);
+          }
         }
-        
-        html {
-          scroll-behavior: auto !important;
-        }
-        
+
         body {
           margin: 0;
           padding: 0;
           background: #000000 !important;
-          overflow-x: hidden;
+          overflow: hidden;
         }
-        
-        ::-webkit-scrollbar {
-          width: 0px;
-          background: transparent;
-        }
-        
+
         * {
-          scrollbar-width: none;
+          -webkit-tap-highlight-color: transparent;
         }
       `}</style>
     </div>
