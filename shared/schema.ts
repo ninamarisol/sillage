@@ -152,14 +152,14 @@ export const QUIZ_SEASONS = ["Spring", "Summer", "Fall", "Winter"] as const;
 export const QUIZ_SETTINGS = ["Office", "Going Out", "Travel", "Everyday", "Occasions"] as const;
 export const QUIZ_SCENT_VIBES = ["Warm", "Fresh", "Mysterious", "Clean", "Earthy", "Sweet", "Powdery", "Bold", "Quiet"] as const;
 export const QUIZ_NOTE_FAMILIES = [
-  { id: "floral", label: "Floral", icon: "🌸", examples: "Rose, jasmine, iris" },
-  { id: "woody", label: "Woody", icon: "🪵", examples: "Cedar, sandalwood, vetiver" },
-  { id: "citrus", label: "Citrus", icon: "🍊", examples: "Bergamot, lemon, neroli" },
-  { id: "gourmand", label: "Gourmand", icon: "🍯", examples: "Vanilla, caramel, chocolate" },
-  { id: "aquatic", label: "Aquatic", icon: "🌊", examples: "Sea salt, marine, rain" },
-  { id: "oriental", label: "Oriental", icon: "✨", examples: "Amber, incense, oud" },
-  { id: "green", label: "Green", icon: "🌿", examples: "Moss, green tea, fig" },
-  { id: "leather", label: "Leather & Tobacco", icon: "🪶", examples: "Suede, smoke, tobacco" },
+  { id: "floral", label: "Floral", icon: "Fl", examples: "Rose, jasmine, iris" },
+  { id: "woody", label: "Woody", icon: "Wd", examples: "Cedar, sandalwood, vetiver" },
+  { id: "citrus", label: "Citrus", icon: "Ct", examples: "Bergamot, lemon, neroli" },
+  { id: "gourmand", label: "Gourmand", icon: "Gm", examples: "Vanilla, caramel, chocolate" },
+  { id: "aquatic", label: "Aquatic", icon: "Aq", examples: "Sea salt, marine, rain" },
+  { id: "oriental", label: "Oriental", icon: "Or", examples: "Amber, incense, oud" },
+  { id: "green", label: "Green", icon: "Gr", examples: "Moss, green tea, fig" },
+  { id: "leather", label: "Leather & Tobacco", icon: "Lt", examples: "Suede, smoke, tobacco" },
 ] as const;
 export const QUIZ_VIBES = {
   sundayMorning: {

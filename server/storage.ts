@@ -7,7 +7,7 @@ import {
   users, accessCodes, fragrances, vaultItems, toTryItems,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, ilike } from "drizzle-orm";
+import { eq, and, ilike, or } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -32,6 +32,7 @@ export interface IStorage {
 
   getToTryItems(userId: string): Promise<ToTryItem[]>;
   createToTryItem(data: InsertToTryItem): Promise<ToTryItem>;
+  updateToTryItem(id: string, data: Partial<ToTryItem>): Promise<ToTryItem | undefined>;
   deleteToTryItem(id: string): Promise<void>;
 }
 
@@ -83,7 +84,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async searchFragrances(query: string): Promise<Fragrance[]> {
-    return db.select().from(fragrances).where(ilike(fragrances.name, `%${query}%`));
+    return db.select().from(fragrances).where(
+      or(
+        ilike(fragrances.name, `%${query}%`),
+        ilike(fragrances.house, `%${query}%`),
+        ilike(fragrances.family, `%${query}%`),
+      )
+    );
   }
 
   async createFragrance(data: InsertFragrance): Promise<Fragrance> {
@@ -120,6 +127,11 @@ export class DatabaseStorage implements IStorage {
 
   async createToTryItem(data: InsertToTryItem): Promise<ToTryItem> {
     const [item] = await db.insert(toTryItems).values(data).returning();
+    return item;
+  }
+
+  async updateToTryItem(id: string, data: Partial<ToTryItem>): Promise<ToTryItem | undefined> {
+    const [item] = await db.update(toTryItems).set(data).where(eq(toTryItems.id, id)).returning();
     return item;
   }
 

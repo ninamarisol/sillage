@@ -301,6 +301,12 @@ export async function registerRoutes(
     res.json({ ...item, fragrance });
   });
 
+  app.patch("/api/to-try/:id", async (req, res) => {
+    const item = await storage.updateToTryItem(req.params.id, req.body);
+    if (!item) return res.status(404).json({ error: "To-try item not found" });
+    res.json(item);
+  });
+
   app.delete("/api/to-try/:id", async (req, res) => {
     await storage.deleteToTryItem(req.params.id);
     res.json({ success: true });

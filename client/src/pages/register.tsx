@@ -46,7 +46,7 @@ export default function Register() {
         storeUser(data.user);
         setLocation("/quiz");
       }
-    } catch (err: any) {
+    } catch {
       setError(isLogin ? "Invalid credentials" : "Username already taken");
     } finally {
       setLoading(false);
@@ -55,18 +55,18 @@ export default function Register() {
 
   const inputStyle = {
     width: "100%",
-    padding: "14px 20px",
+    padding: "16px 20px",
     background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(255,255,255,0.12)",
-    borderRadius: "4px",
+    border: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: "6px",
     color: "#ffffff",
-    fontSize: "14px",
-    letterSpacing: "0.05em",
+    fontSize: "15px",
+    letterSpacing: "0.03em",
     outline: "none",
     fontFamily: "'Cormorant', Georgia, serif",
     boxSizing: "border-box" as const,
     transition: "border-color 0.3s ease",
-    marginBottom: "12px",
+    marginBottom: "14px",
   };
 
   return (
@@ -83,11 +83,23 @@ export default function Register() {
         fontFamily: "'Cormorant', Georgia, serif",
       }}
     >
-      <div style={{ textAlign: "center", width: "min(360px, 85vw)" }}>
-        <h1 style={{ color: "#ffffff", fontFamily: "'Pinyon Script', cursive", fontSize: "clamp(32px, 6vw, 44px)", marginBottom: "6px", fontWeight: 400 }}>
+      <div style={{ textAlign: "center", width: "min(400px, 85vw)" }}>
+        <h1 style={{
+          color: "#ffffff",
+          fontFamily: "'Pinyon Script', cursive",
+          fontSize: "clamp(36px, 8vw, 52px)",
+          marginBottom: "8px",
+          fontWeight: 400,
+        }}>
           Sillage
         </h1>
-        <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "40px" }}>
+        <p style={{
+          color: "rgba(255,255,255,0.35)",
+          fontSize: "14px",
+          letterSpacing: "0.2em",
+          textTransform: "uppercase",
+          marginBottom: "48px",
+        }}>
           {isLogin ? "Welcome back" : "Create your account"}
         </p>
 
@@ -120,7 +132,12 @@ export default function Register() {
         />
 
         {error && (
-          <p data-testid="text-error" style={{ color: "rgba(200,80,80,0.8)", fontSize: "12px", marginBottom: "12px", letterSpacing: "0.1em" }}>
+          <p data-testid="text-error" style={{
+            color: "rgba(200,80,80,0.8)",
+            fontSize: "13px",
+            marginBottom: "14px",
+            letterSpacing: "0.1em",
+          }}>
             {error}
           </p>
         )}
@@ -131,18 +148,18 @@ export default function Register() {
           disabled={loading}
           style={{
             width: "100%",
-            padding: "14px",
-            background: "rgba(255,255,255,0.08)",
+            padding: "16px",
+            background: "rgba(255,255,255,0.07)",
             border: "1px solid rgba(255,255,255,0.15)",
-            borderRadius: "4px",
+            borderRadius: "6px",
             color: "rgba(255,255,255,0.8)",
-            fontSize: "12px",
+            fontSize: "13px",
             letterSpacing: "0.25em",
             textTransform: "uppercase",
             cursor: "pointer",
             fontFamily: "'Cormorant', Georgia, serif",
             transition: "all 0.3s ease",
-            marginBottom: "20px",
+            marginBottom: "24px",
           }}
         >
           {loading ? "..." : (isLogin ? "Sign In" : "Continue")}
@@ -151,7 +168,13 @@ export default function Register() {
         <p
           data-testid="link-toggle-auth"
           onClick={() => { setIsLogin(!isLogin); setError(""); }}
-          style={{ color: "rgba(255,255,255,0.35)", fontSize: "12px", cursor: "pointer", letterSpacing: "0.1em" }}
+          style={{
+            color: "rgba(255,255,255,0.3)",
+            fontSize: "13px",
+            cursor: "pointer",
+            letterSpacing: "0.08em",
+            lineHeight: 1.6,
+          }}
         >
           {isLogin ? "Need an account? Sign up" : "Already have an account? Sign in"}
         </p>
@@ -159,7 +182,7 @@ export default function Register() {
 
       <style>{`
         body { margin: 0; background: #000 !important; }
-        input::placeholder { color: rgba(255,255,255,0.25); }
+        input::placeholder { color: rgba(255,255,255,0.2); }
       `}</style>
     </div>
   );
