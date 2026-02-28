@@ -270,14 +270,17 @@ export default function Home() {
         data-testid="headline-sillage"
         style={{
           position: "fixed",
-          bottom: "14%",
+          top: 0,
           left: 0,
           right: 0,
-          textAlign: "center",
+          bottom: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
           zIndex: 10,
           pointerEvents: "none",
           opacity: headlineOpacity,
-          transform: `translateY(${(1 - headlineOpacity) * 30}px)`,
+          transform: `translateY(${(1 - headlineOpacity) * 40}px)`,
           transition: "opacity 1.2s cubic-bezier(0.25, 0.1, 0.25, 1), transform 1.4s cubic-bezier(0.25, 0.1, 0.25, 1)",
         }}
       >
@@ -286,10 +289,11 @@ export default function Home() {
             color: "#ffffff",
             fontFamily: "'Pinyon Script', cursive",
             fontWeight: 400,
-            fontSize: "clamp(36px, 7vw, 80px)",
-            letterSpacing: "0.04em",
+            fontSize: "clamp(64px, 18vw, 220px)",
+            letterSpacing: "0.02em",
             margin: 0,
-            textShadow: "0 2px 60px rgba(0,0,0,0.5)",
+            textShadow: "0 4px 80px rgba(0,0,0,0.6), 0 0 120px rgba(0,0,0,0.3)",
+            lineHeight: 1,
           }}
         >
           Sillage
@@ -301,14 +305,14 @@ export default function Home() {
           data-testid="hold-button-container"
           style={{
             position: "fixed",
-            bottom: "clamp(32px, 6vh, 64px)",
+            top: "50%",
             left: "50%",
-            transform: "translateX(-50%)",
+            transform: "translate(calc(-50% + 8vw), calc(-50% - 18vh))",
             zIndex: 20,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: "12px",
+            gap: "10px",
           }}
         >
           <button
@@ -320,32 +324,34 @@ export default function Home() {
             onTouchEnd={stopPlayback}
             onTouchCancel={stopPlayback}
             style={{
-              width: "64px",
-              height: "64px",
+              width: "clamp(48px, 8vw, 72px)",
+              height: "clamp(48px, 8vw, 72px)",
               borderRadius: "50%",
-              border: "1.5px solid rgba(255,255,255,0.25)",
-              background: isHolding ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)",
+              border: "1.5px solid rgba(255,255,255,0.2)",
+              background: isHolding ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.03)",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               transition: "background 0.3s ease, border-color 0.3s ease, transform 0.2s ease",
               animation: isHolding ? "none" : "buttonPulse 2.5s ease-in-out infinite",
-              transform: isHolding ? "scale(0.92)" : "scale(1)",
+              transform: isHolding ? "scale(0.9)" : "scale(1)",
               outline: "none",
               padding: 0,
+              backdropFilter: "blur(2px)",
+              WebkitBackdropFilter: "blur(2px)",
             }}
           >
             <div
               style={{
-                width: "24px",
-                height: "24px",
+                width: "clamp(16px, 3vw, 24px)",
+                height: "clamp(16px, 3vw, 24px)",
                 borderRadius: "50%",
                 background: isHolding
-                  ? "rgba(255,255,255,0.5)"
-                  : "rgba(255,255,255,0.2)",
+                  ? "rgba(255,255,255,0.45)"
+                  : "rgba(255,255,255,0.15)",
                 transition: "background 0.3s ease, transform 0.2s ease",
-                transform: isHolding ? "scale(0.85)" : "scale(1)",
+                transform: isHolding ? "scale(0.8)" : "scale(1)",
               }}
             />
           </button>
@@ -353,7 +359,7 @@ export default function Home() {
             data-testid="hold-label"
             style={{
               color: "rgba(255,255,255,0.3)",
-              fontSize: "10px",
+              fontSize: "9px",
               letterSpacing: "0.3em",
               textTransform: "uppercase",
               fontFamily: "'Cormorant', Georgia, serif",
