@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useLocation } from "wouter";
 
 const FPS = 30;
 const FRAME_INTERVAL = 1000 / FPS;
@@ -17,6 +18,8 @@ export default function Home() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [currentFrame, setCurrentFrame] = useState(0);
   const [isHolding, setIsHolding] = useState(false);
+  const [showEnter, setShowEnter] = useState(false);
+  const [, setLocation] = useLocation();
 
   const drawFrame = useCallback((frameIndex: number) => {
     const canvas = canvasRef.current;
@@ -164,6 +167,13 @@ export default function Home() {
     : 0;
   const atEnd = totalFramesRef.current > 0 && currentFrame >= totalFramesRef.current - 1;
 
+  useEffect(() => {
+    if (atEnd) {
+      const timer = setTimeout(() => setShowEnter(true), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [atEnd]);
+
   if (loadError) {
     return (
       <div
@@ -284,20 +294,48 @@ export default function Home() {
           transition: "opacity 1.2s cubic-bezier(0.25, 0.1, 0.25, 1), transform 1.4s cubic-bezier(0.25, 0.1, 0.25, 1)",
         }}
       >
-        <h1
-          style={{
-            color: "#ffffff",
-            fontFamily: "'Pinyon Script', cursive",
-            fontWeight: 400,
-            fontSize: "clamp(64px, 18vw, 220px)",
-            letterSpacing: "0.02em",
-            margin: 0,
-            textShadow: "0 4px 80px rgba(0,0,0,0.6), 0 0 120px rgba(0,0,0,0.3)",
-            lineHeight: 1,
-          }}
-        >
-          Sillage
-        </h1>
+        <div style={{ textAlign: "center" }}>
+          <h1
+            style={{
+              color: "#ffffff",
+              fontFamily: "'Pinyon Script', cursive",
+              fontWeight: 400,
+              fontSize: "clamp(64px, 18vw, 220px)",
+              letterSpacing: "0.02em",
+              margin: 0,
+              textShadow: "0 4px 80px rgba(0,0,0,0.6), 0 0 120px rgba(0,0,0,0.3)",
+              lineHeight: 1,
+            }}
+          >
+            Sillage
+          </h1>
+          {showEnter && (
+            <button
+              data-testid="button-enter-sillage"
+              onClick={() => setLocation("/access")}
+              style={{
+                marginTop: "32px",
+                padding: "14px 40px",
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.18)",
+                borderRadius: "4px",
+                color: "rgba(255,255,255,0.7)",
+                fontSize: "12px",
+                letterSpacing: "0.3em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+                fontFamily: "'Cormorant', Georgia, serif",
+                pointerEvents: "auto",
+                animation: "fadeIn 1.2s ease-out",
+                transition: "background 0.3s ease, border-color 0.3s ease",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.18)"; }}
+            >
+              Enter Sillage
+            </button>
+          )}
+        </div>
       </div>
 
       {isLoaded && !atEnd && (
@@ -382,6 +420,11 @@ export default function Home() {
             box-shadow: 0 0 0 12px rgba(255,255,255,0);
             border-color: rgba(255,255,255,0.35);
           }
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         body {

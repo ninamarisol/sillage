@@ -1,31 +1,47 @@
-# Sillage — Click-and-Hold Perfume Animation
+# Sillage — Luxury Fragrance Platform
 
 ## Overview
-A cinematic, click-and-hold interactive animation website where JPEG frames of a perfume bottle spray advance while the user holds down a button. Releasing pauses the animation on the current frame. Similar to high-end Apple product page experiences.
+A luxury fragrance discovery platform with a cinematic click-and-hold perfume spray animation as the entry experience, followed by a creator access code gate, multi-step onboarding quiz, scent archetype reveal, and a full dashboard with Vault, Discover, and To-Try features.
 
 ## Architecture
-- **Frontend**: React with Canvas API for frame rendering, click-and-hold interaction at 30fps
-- **Backend**: Express server with automatic ZIP extraction and `/api/frames` endpoint
-- **No database needed** — purely static frame-based experience
+- **Frontend**: React + wouter routing, TanStack Query, Canvas API for splash animation
+- **Backend**: Express server with PostgreSQL via Drizzle ORM (node-postgres)
+- **Auth**: localStorage-based (no sessions), user object stored client-side
+- **Database**: PostgreSQL with users, access_codes, fragrances, vault_items, to_try_items tables
 
 ## Key Files
-- `client/src/pages/home.tsx` — Main animation page with Canvas rendering, hold-to-play interaction, preloader, and headline
-- `client/public/frames/` — 125 JPEG frames extracted from the source ZIP
-- `server/routes.ts` — Auto-extracts frames from ZIP on startup, API endpoint listing available frames
-- `client/index.html` — SEO tags, Pinyon Script + Cormorant fonts from Google Fonts
+- `client/src/App.tsx` — Router with routes: `/`, `/access`, `/register`, `/quiz`, `/dashboard`
+- `client/src/pages/home.tsx` — Splash/entry page with click-and-hold spray animation + "Enter Sillage" CTA
+- `client/src/pages/access-code.tsx` — Creator access code gate
+- `client/src/pages/register.tsx` — Account creation / login (toggle)
+- `client/src/pages/quiz.tsx` — 5-step onboarding quiz with archetype reveal
+- `client/src/pages/dashboard.tsx` — Main hub with Home/Vault/Discover/To-Try tabs
+- `client/src/lib/auth.ts` — localStorage user management (get/store/clear)
+- `shared/schema.ts` — Drizzle schema, quiz constants, archetype definitions
+- `server/routes.ts` — All API routes + archetype computation + match scoring
+- `server/storage.ts` — DatabaseStorage class with CRUD operations
+- `server/seed.ts` — Seeds 5 access codes and 15 fragrances
+- `client/index.html` — Pinyon Script + Cormorant fonts from Google Fonts
 
-## How It Works
-1. Server extracts frames from ZIP on startup if not already extracted
-2. Frontend fetches frame list from `/api/frames`
-3. All 125 frames preloaded with a loading progress bar
-4. Canvas element fixed to viewport, frames render via click-and-hold at 30fps
-5. "Sillage" headline (Pinyon Script font) fades in at ~60% frame progress
-6. Hold button with pulse animation disappears when animation reaches the end
+## User Flow
+1. Splash page: Hold button to play perfume spray animation (125 frames, 30fps)
+2. After animation completes, "Enter Sillage" button appears
+3. Access code page: Enter a creator code (e.g., BRANDSTORM, SILLAGE_DEMO)
+4. Register/Login page: Create account or sign in
+5. Quiz: 5 steps — Season, Settings, Scent Vibes, Note Families, Identity Vibes
+6. Archetype reveal: Animated reveal of computed scent archetype
+7. Dashboard: Home (archetype + recommendations), Vault (collection), Discover (search), To-Try (wishlist)
+
+## Archetypes (6)
+velvet-dusk, green-wanderer, clean-canvas, citrus-architect, baroque-collector, solar-nomad
+
+## Access Codes
+BRANDSTORM, SILLAGE_DEMO, SILLAGE_LAYLA, VAULT_BYRD, SCENT_MAYA
 
 ## Design
-- Pure black (#000000) background
-- Pinyon Script (elegant cursive) for "Sillage" headline
-- Cormorant (serif) for UI text
-- Pulsing circular hold button with "Hold" label
-- No visible UI clutter — pure cinematic experience
-- Mobile responsive with touch support
+- Pure black (#000000) background throughout
+- Pinyon Script (cursive) for headlines/logo
+- Cormorant (serif) for all UI text
+- White text with rgba opacity hierarchy
+- Minimal borders, glass-morphic cards
+- No emoji in production UI (icons only)
