@@ -187,7 +187,7 @@ export default function Quiz() {
               >
                 <div style={{
                   width: "60px", height: "40px", borderRadius: "6px",
-                  background: "linear-gradient(135deg, #FFF8F5, #F5E6DF)",
+                  background: "linear-gradient(135deg, #eddfd9, #dcc5b5)",
                   border: "1px solid rgba(200,180,170,0.3)",
                 }} />
                 <span style={{

@@ -24,7 +24,7 @@ A luxury fragrance discovery platform with a cinematic click-and-hold perfume sp
 - `server/seed.ts` — Seeds 5 access codes, 33 fragrances, 8 social users, 8 vault items, 10 wear logs, 8 to-try items, 8 feed posts
 
 ## User Flow
-1. Splash page: Hold button to play perfume spray animation (125 frames, 30fps)
+1. Splash page: Hold large centered spray button (clamp 120-180px) to play perfume spray animation (125 frames, 30fps)
 2. After animation, "Enter Sillage" button appears → redirects to `/access`
 3. Login screen: Choose "I'm new — I have a code" (any non-empty code → quiz) or "Welcome back" (email + password → dashboard)
 4. Quiz: 6 steps — Theme Choice, Season, Settings, Scent Vibes, Note Families, Identity Vibes
@@ -35,7 +35,7 @@ A luxury fragrance discovery platform with a cinematic click-and-hold perfume sp
 ### Bottom Navigation: Home | Explore | Profile
 
 ### Home Tab — Sub-tabs:
-- **My Vault**: Glass shelf vault with 5 SVG bottle shapes (Art Deco, Round Flacon, Geometric, Wide Oval, Flat Square), colored liquid fill by family, gold/silver caps, shine streaks, bokeh particles, hover cards with Log Wear/Details/Remove
+- **My Vault**: Glass shelf vault with 5 SVG bottle shapes (Art Deco, Round Flacon, Geometric, Wide Oval, Flat Square), colored liquid fill by family, beige caps, shine streaks, bokeh particles, hover cards with Log Wear/Details/Remove
 - **Scent Log**: Chronological wear timeline with mood tags and notes, "Log today's scent" quick-action with miniature vault grid
 - **To Try**: AI recommendations section + user's saved items with circular match score indicators, priority badges (High Priority/Curious/Someday)
 
@@ -44,11 +44,21 @@ A luxury fragrance discovery platform with a cinematic click-and-hold perfume sp
 - **Exchange**: Subscription-gated marketplace with frosted glass overlay for non-subscribers, L'Oreal Drops carousel (discontinued drops with countdown), peer-to-peer listings grid with Sillage Certified badge + match scores, filter pills
 
 ### Profile Tab:
-- Identity header: gradient avatar with gold outline, @username, archetype pill badge + description
+- Identity header: gradient avatar with warm beige outline, @username, archetype pill badge + description
 - Stats row: Collection, Wears, Posts, Following, Followers
 - Scent DNA: horizontal bar chart (Amber 78%, Woody 64%, Floral 51%, Musk 43%, Citrus 31%)
 - Personal Stats: 8 fun stat cards in 2-column grid
 - Theme toggle, Retake Quiz, Recent Posts, Logout
+
+## Color Palette (Warm Neutrals Only)
+- **Black**: `#000000`
+- **Warm cream** (light mode bg): `#eddfd9`
+- **Rose beige** (primary accent): `#d4b8a0` — replaces old gold
+- **Soft beige**: `#c9b8a8` — replaces old violet
+- **Warm taupe**: `#a89585` — mid-tone accent
+- **Muted blush**: `#dcc5b5` — gentle highlight
+- **Dark taupe**: `#8a7a6a` — darkest warm neutral
+- **No gold, violet/purple, or teal anywhere** — entire app uses only black, cream, and beige tones
 
 ## Demo User
 - Username: `velvet.nina`, Password: `sillage2025`, Archetype: The Velvet Dusk
@@ -56,7 +66,7 @@ A luxury fragrance discovery platform with a cinematic click-and-hold perfume sp
 - 10 wear log entries, 8 to-try items, 8 feed posts from varied users
 
 ## Theme System
-- **Light mode**: bg `#FFF8F5`, text `#1a1a1a`
+- **Light mode**: bg `#eddfd9`, text `#1a1a1a`
 - **Dark mode**: bg `#000`, text `#fff`
 - ThemeProvider wraps entire app, stored in localStorage
 - Access/login page always dark
@@ -81,6 +91,7 @@ A luxury fragrance discovery platform with a cinematic click-and-hold perfume sp
 
 ## Archetypes (6)
 velvet-dusk, green-wanderer, clean-canvas, citrus-architect, baroque-collector, solar-nomad
+- All archetype colors are warm neutrals (beige/taupe/cream family)
 
 ## Access Codes
 BRANDSTORM, SILLAGE_DEMO, SILLAGE_LAYLA, VAULT_BYRD, SCENT_MAYA
@@ -88,9 +99,10 @@ BRANDSTORM, SILLAGE_DEMO, SILLAGE_LAYLA, VAULT_BYRD, SCENT_MAYA
 ## Design
 - Pinyon Script (cursive) for headlines/logo
 - Cormorant Garamond (serif) for all UI text — loaded via Google Fonts
-- Gold accent: rgba(212,175,55,0.85)
-- Violet accent: rgba(138,100,220,1) for pill buttons
+- Primary accent: `rgba(212,184,160,0.9)` (rose beige) — used for active states, stars, highlights
+- Secondary accent: `rgba(201,184,168,1)` (soft beige) — used for subtle accents
 - Glass shelf with SVG bottles, bokeh particles, warm glow
-- Bottom tab nav with unicode icons, gold active state + active indicator bar
+- Bottom tab nav with unicode icons, warm beige active state + active indicator bar
 - Minimal borders, glass-morphic cards, slide-up animations
 - Returning user login: no auto-registration, shows error on bad credentials
+- Splash page: large centered spray button (clamp 120-180px) with "Spray to Start your Sillage" label

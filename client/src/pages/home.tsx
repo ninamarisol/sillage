@@ -185,8 +185,8 @@ export default function Home() {
           alignItems: "center",
           justifyContent: "center",
           background: "#000000",
-          color: "rgba(255,255,255,0.5)",
-          fontFamily: "'Cormorant', Georgia, serif",
+          color: "#c9b8a8",
+          fontFamily: "'Cormorant Garamond', Georgia, serif",
           fontSize: "14px",
           letterSpacing: "0.1em",
         }}
@@ -228,7 +228,7 @@ export default function Home() {
               style={{
                 width: "100%",
                 height: "2px",
-                background: "rgba(255,255,255,0.08)",
+                background: "rgba(201,184,168,0.12)",
                 borderRadius: "1px",
                 overflow: "hidden",
               }}
@@ -238,7 +238,7 @@ export default function Home() {
                 style={{
                   height: "100%",
                   width: `${loadingProgress}%`,
-                  background: "rgba(255,255,255,0.7)",
+                  background: "#d4b8a0",
                   borderRadius: "1px",
                   transition: "width 0.3s ease-out",
                 }}
@@ -248,11 +248,11 @@ export default function Home() {
           <span
             data-testid="loading-text"
             style={{
-              color: "rgba(255,255,255,0.35)",
+              color: "#a89585",
               fontSize: "11px",
               letterSpacing: "0.25em",
               textTransform: "uppercase",
-              fontFamily: "'Cormorant', Georgia, serif",
+              fontFamily: "'Cormorant Garamond', Georgia, serif",
             }}
           >
             {loadingProgress}%
@@ -297,7 +297,7 @@ export default function Home() {
         <div style={{ textAlign: "center" }}>
           <h1
             style={{
-              color: "#ffffff",
+              color: "#eddfd9",
               fontFamily: "'Pinyon Script', cursive",
               fontWeight: 400,
               fontSize: "clamp(64px, 18vw, 220px)",
@@ -315,22 +315,22 @@ export default function Home() {
               onClick={() => setLocation("/access")}
               style={{
                 marginTop: "32px",
-                padding: "14px 40px",
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.18)",
+                padding: "16px 44px",
+                background: "rgba(212,184,160,0.08)",
+                border: "1px solid rgba(212,184,160,0.3)",
                 borderRadius: "4px",
-                color: "rgba(255,255,255,0.7)",
-                fontSize: "12px",
+                color: "#eddfd9",
+                fontSize: "14px",
                 letterSpacing: "0.3em",
                 textTransform: "uppercase",
                 cursor: "pointer",
-                fontFamily: "'Cormorant', Georgia, serif",
+                fontFamily: "'Cormorant Garamond', Georgia, serif",
                 pointerEvents: "auto",
                 animation: "fadeIn 1.2s ease-out",
                 transition: "background 0.3s ease, border-color 0.3s ease",
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.18)"; }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(212,184,160,0.15)"; e.currentTarget.style.borderColor = "rgba(212,184,160,0.45)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(212,184,160,0.08)"; e.currentTarget.style.borderColor = "rgba(212,184,160,0.3)"; }}
             >
               Enter Sillage
             </button>
@@ -345,12 +345,12 @@ export default function Home() {
             position: "fixed",
             top: "50%",
             left: "50%",
-            transform: "translate(calc(-50% + 8vw), calc(-50% - 18vh))",
+            transform: "translate(-50%, -50%)",
             zIndex: 20,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: "10px",
+            gap: "16px",
           }}
         >
           <button
@@ -362,18 +362,18 @@ export default function Home() {
             onTouchEnd={stopPlayback}
             onTouchCancel={stopPlayback}
             style={{
-              width: "clamp(48px, 8vw, 72px)",
-              height: "clamp(48px, 8vw, 72px)",
+              width: "clamp(120px, 28vw, 180px)",
+              height: "clamp(120px, 28vw, 180px)",
               borderRadius: "50%",
-              border: "1.5px solid rgba(255,255,255,0.2)",
-              background: isHolding ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.03)",
+              border: "2px solid rgba(212,184,160,0.25)",
+              background: isHolding ? "rgba(212,184,160,0.12)" : "rgba(212,184,160,0.04)",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               transition: "background 0.3s ease, border-color 0.3s ease, transform 0.2s ease",
               animation: isHolding ? "none" : "buttonPulse 2.5s ease-in-out infinite",
-              transform: isHolding ? "scale(0.9)" : "scale(1)",
+              transform: isHolding ? "scale(0.95)" : "scale(1)",
               outline: "none",
               padding: 0,
               backdropFilter: "blur(2px)",
@@ -382,12 +382,12 @@ export default function Home() {
           >
             <div
               style={{
-                width: "clamp(16px, 3vw, 24px)",
-                height: "clamp(16px, 3vw, 24px)",
+                width: "clamp(32px, 6vw, 48px)",
+                height: "clamp(32px, 6vw, 48px)",
                 borderRadius: "50%",
                 background: isHolding
-                  ? "rgba(255,255,255,0.45)"
-                  : "rgba(255,255,255,0.15)",
+                  ? "rgba(212,184,160,0.45)"
+                  : "rgba(212,184,160,0.18)",
                 transition: "background 0.3s ease, transform 0.2s ease",
                 transform: isHolding ? "scale(0.8)" : "scale(1)",
               }}
@@ -396,16 +396,19 @@ export default function Home() {
           <span
             data-testid="hold-label"
             style={{
-              color: "rgba(255,255,255,0.3)",
-              fontSize: "9px",
-              letterSpacing: "0.3em",
+              color: "#d4b8a0",
+              fontSize: "clamp(13px, 3vw, 16px)",
+              letterSpacing: "0.25em",
               textTransform: "uppercase",
-              fontFamily: "'Cormorant', Georgia, serif",
+              fontFamily: "'Cormorant Garamond', Georgia, serif",
               opacity: isHolding ? 0 : 1,
               transition: "opacity 0.4s ease",
+              textAlign: "center",
+              lineHeight: 1.6,
+              maxWidth: "220px",
             }}
           >
-            Hold
+            Spray to Start your Sillage
           </span>
         </div>
       )}
@@ -413,12 +416,12 @@ export default function Home() {
       <style>{`
         @keyframes buttonPulse {
           0%, 100% {
-            box-shadow: 0 0 0 0 rgba(255,255,255,0.08);
-            border-color: rgba(255,255,255,0.2);
+            box-shadow: 0 0 0 0 rgba(212,184,160,0.1);
+            border-color: rgba(212,184,160,0.25);
           }
           50% {
-            box-shadow: 0 0 0 12px rgba(255,255,255,0);
-            border-color: rgba(255,255,255,0.35);
+            box-shadow: 0 0 0 16px rgba(212,184,160,0);
+            border-color: rgba(212,184,160,0.4);
           }
         }
 

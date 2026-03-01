@@ -27,7 +27,7 @@ function useColors() {
   const { theme } = useTheme();
   const d = theme === "dark";
   return {
-    isDark: d, bg: d ? "#000" : "#FFF8F5", fg: d ? "#fff" : "#1a1a1a",
+    isDark: d, bg: d ? "#000" : "#eddfd9", fg: d ? "#fff" : "#1a1a1a",
     fgSoft: d ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)",
     fgMuted: d ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.25)",
     fgDim: d ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.35)",
@@ -44,10 +44,10 @@ function useColors() {
     panelBg: d ? "#0a0a0a" : "#fff",
     chipActive: d ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)",
     chipBorder: d ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
-    gold: "rgba(212,175,55,0.85)", goldDim: "rgba(212,175,55,0.5)",
-    green: "rgba(180,220,180,0.85)", greenDim: "rgba(180,220,180,0.5)",
-    violet: "rgba(138,100,220,1)", violetDim: "rgba(138,100,220,0.4)",
-    shelfGlow: d ? "rgba(212,175,55,0.08)" : "rgba(180,160,140,0.12)",
+    gold: "rgba(212,184,160,0.9)", goldDim: "rgba(212,184,160,0.5)",
+    green: "rgba(196,168,144,0.85)", greenDim: "rgba(196,168,144,0.6)",
+    violet: "rgba(201,184,168,1)", violetDim: "rgba(201,184,168,0.4)",
+    shelfGlow: d ? "rgba(212,184,160,0.08)" : "rgba(180,160,140,0.12)",
     shelfBorder: d ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
   };
 }
@@ -59,8 +59,8 @@ const BOTTLE_SHAPES = [
         <linearGradient id={`shine0-${uid}`} x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="white" stopOpacity="0.15" /><stop offset="100%" stopColor="white" stopOpacity="0" /></linearGradient>
         <clipPath id={`cp0-${uid}`}><rect x="12" y="14" width="36" height="80" rx="6" /></clipPath>
       </defs>
-      <rect x="22" y="4" width="16" height="8" rx="2" fill="gold" opacity="0.5" />
-      <rect x="26" y="0" width="8" height="6" rx="1.5" fill="gold" opacity="0.4" />
+      <rect x="22" y="4" width="16" height="8" rx="2" fill="#c9b8a8" opacity="0.5" />
+      <rect x="26" y="0" width="8" height="6" rx="1.5" fill="#c9b8a8" opacity="0.4" />
       <rect x="12" y="14" width="36" height="80" rx="6" fill={color} opacity="0.12" stroke={color} strokeWidth="0.8" strokeOpacity="0.3" />
       <rect x="12" y={14 + 80 * (1 - fill / 100)} width="36" height={80 * fill / 100} clipPath={`url(#cp0-${uid})`} fill={color} opacity="0.4" />
       <rect x="12" y="14" width="36" height="80" rx="6" fill={`url(#shine0-${uid})`} />
@@ -88,8 +88,8 @@ const BOTTLE_SHAPES = [
         <linearGradient id={`shine2-${uid}`} x1="0.2" y1="0" x2="0.8" y2="1"><stop offset="0%" stopColor="white" stopOpacity="0.12" /><stop offset="100%" stopColor="white" stopOpacity="0" /></linearGradient>
         <clipPath id={`cp2-${uid}`}><path d="M18 16 Q10 50 14 90 Q16 96 30 96 Q44 96 46 90 Q50 50 42 16 Z" /></clipPath>
       </defs>
-      <rect x="25" y="2" width="10" height="12" rx="2" fill="gold" opacity="0.5" />
-      <rect x="27" y="0" width="6" height="4" rx="1" fill="gold" opacity="0.4" />
+      <rect x="25" y="2" width="10" height="12" rx="2" fill="#c9b8a8" opacity="0.5" />
+      <rect x="27" y="0" width="6" height="4" rx="1" fill="#c9b8a8" opacity="0.4" />
       <path d="M18 16 Q10 50 14 90 Q16 96 30 96 Q44 96 46 90 Q50 50 42 16 Z" fill={color} opacity="0.12" stroke={color} strokeWidth="0.8" strokeOpacity="0.3" />
       <rect x="8" y={96 - 80 * fill / 100} width="44" height={80 * fill / 100} clipPath={`url(#cp2-${uid})`} fill={color} opacity="0.4" />
       <path d="M18 16 Q10 50 14 90 Q16 96 30 96 Q44 96 46 90 Q50 50 42 16 Z" fill={`url(#shine2-${uid})`} />
@@ -116,8 +116,8 @@ const BOTTLE_SHAPES = [
         <linearGradient id={`shine4-${uid}`} x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="white" stopOpacity="0.12" /><stop offset="100%" stopColor="white" stopOpacity="0" /></linearGradient>
         <clipPath id={`cp4-${uid}`}><rect x="8" y="14" width="54" height="78" rx="4" /></clipPath>
       </defs>
-      <rect x="26" y="2" width="18" height="8" rx="3" fill="gold" opacity="0.5" />
-      <rect x="30" y="0" width="10" height="4" rx="2" fill="gold" opacity="0.4" />
+      <rect x="26" y="2" width="18" height="8" rx="3" fill="#c9b8a8" opacity="0.5" />
+      <rect x="30" y="0" width="10" height="4" rx="2" fill="#c9b8a8" opacity="0.4" />
       <rect x="8" y="14" width="54" height="78" rx="4" fill={color} opacity="0.12" stroke={color} strokeWidth="0.8" strokeOpacity="0.3" />
       <rect x="8" y={14 + 78 * (1 - fill / 100)} width="54" height={78 * fill / 100} clipPath={`url(#cp4-${uid})`} fill={color} opacity="0.4" />
       <rect x="8" y="14" width="54" height="78" rx="4" fill={`url(#shine4-${uid})`} />
@@ -127,14 +127,14 @@ const BOTTLE_SHAPES = [
 ];
 
 const BOTTLE_COLOR_MAP: Record<string, string> = {
-  oriental: "#D4A052", gourmand: "#D4A052", woody: "#5B8C5A", floral: "#E8C4D8",
-  aquatic: "#5BACD9", citrus: "#FFD700", green: "#5B8C5A", fresh: "#87CEEB",
-  leather: "#8B5E3C",
+  oriental: "#c4a890", gourmand: "#d4b8a0", woody: "#a89080", floral: "#dcc5b5",
+  aquatic: "#b0a090", citrus: "#c9b8a8", green: "#a89585", fresh: "#c0b0a0",
+  leather: "#8a7a6a",
 };
 
 function getBottleColor(family: string | null | undefined): string {
-  if (!family) return "#9CA3AF";
-  return BOTTLE_COLOR_MAP[family.toLowerCase()] || FAMILY_COLORS[family.charAt(0).toUpperCase() + family.slice(1).toLowerCase()] || "#9CA3AF";
+  if (!family) return "#b0a090";
+  return BOTTLE_COLOR_MAP[family.toLowerCase()] || FAMILY_COLORS[family.charAt(0).toUpperCase() + family.slice(1).toLowerCase()] || "#b0a090";
 }
 
 function timeAgo(dateStr: string) {
@@ -638,7 +638,7 @@ function ToTryTab({ userId, vaultFragIds, toTryItems: items, onDetail, c }: {
 
   const priorityBadge = (p: string | null) => {
     const colors: Record<string, { bg: string; fg: string }> = {
-      high: { bg: "rgba(212,175,55,0.15)", fg: c.gold },
+      high: { bg: "rgba(212,184,160,0.15)", fg: c.gold },
       curious: { bg: `${c.violet}15`, fg: c.violet },
       someday: { bg: c.chipActive, fg: c.fgDim },
     };
@@ -919,18 +919,18 @@ function ExchangeTab({ c }: { c: ReturnType<typeof useColors> }) {
   const [activeFilter, setActiveFilter] = useState("all");
 
   const drops = [
-    { name: "Tresor Midnight Rose", house: "Lancome", was: 95, now: 67, ends: "23:14:07", gradient: "linear-gradient(135deg, #E8C4D8, #6B2D5B)" },
-    { name: "Cinema EDP", house: "Yves Saint Laurent", was: 110, now: 79, ends: "18:42:31", gradient: "linear-gradient(135deg, #D4A052, #5B2D2D)" },
-    { name: "Idole L'Intense", house: "Giorgio Armani", was: 85, now: 58, ends: "06:08:55", gradient: "linear-gradient(135deg, #E8C4D8, #C47A2B)" },
+    { name: "Tresor Midnight Rose", house: "Lancome", was: 95, now: 67, ends: "23:14:07", gradient: "linear-gradient(135deg, #dcc5b5, #b89e8a)" },
+    { name: "Cinema EDP", house: "Yves Saint Laurent", was: 110, now: 79, ends: "18:42:31", gradient: "linear-gradient(135deg, #c9b8a8, #8a7a6a)" },
+    { name: "Idole L'Intense", house: "Giorgio Armani", was: 85, now: 58, ends: "06:08:55", gradient: "linear-gradient(135deg, #dcc5b5, #a89585)" },
   ];
 
   const listings = [
-    { name: "Chanel No. 5 EDP", fill: 80, seller: "@velvet.nina", archColor: "#6B2D5B", price: 62, certified: true, match: 84 },
-    { name: "Tom Ford Noir", fill: 60, seller: "@baroque.queen", archColor: "#5B2D2D", price: 74, certified: false, match: 0 },
-    { name: "Mojave Ghost", fill: 90, seller: "@greenscents", archColor: "#2D5B3A", price: 88, certified: true, match: 87 },
-    { name: "Flowerbomb", fill: 45, seller: "@scentedbylayla", archColor: "#5B2D2D", price: 55, certified: false, match: 0 },
-    { name: "Miss Dior Blooming", fill: 70, seller: "@cecifrag", archColor: "#C47A2B", price: 48, certified: true, match: 0 },
-    { name: "Flower Market", fill: 55, seller: "@thecanvas.co", archColor: "#8B8B8B", price: 71, certified: false, match: 0 },
+    { name: "Chanel No. 5 EDP", fill: 80, seller: "@velvet.nina", archColor: "#b89e8a", price: 62, certified: true, match: 84 },
+    { name: "Tom Ford Noir", fill: 60, seller: "@baroque.queen", archColor: "#8a7a6a", price: 74, certified: false, match: 0 },
+    { name: "Mojave Ghost", fill: 90, seller: "@greenscents", archColor: "#a89080", price: 88, certified: true, match: 87 },
+    { name: "Flowerbomb", fill: 45, seller: "@scentedbylayla", archColor: "#8a7a6a", price: 55, certified: false, match: 0 },
+    { name: "Miss Dior Blooming", fill: 70, seller: "@cecifrag", archColor: "#d4b8a0", price: 48, certified: true, match: 0 },
+    { name: "Flower Market", fill: 55, seller: "@thecanvas.co", archColor: "#9a8a7a", price: 71, certified: false, match: 0 },
   ];
 
   const filters = ["All", "Certified", "High Match", "Under $50", "Near Full"];
@@ -962,7 +962,7 @@ function ExchangeTab({ c }: { c: ReturnType<typeof useColors> }) {
           <button data-testid="button-join-exchange"
             onClick={() => setIsSubscribed(true)}
             style={{
-              padding: "14px 32px", background: `linear-gradient(135deg, ${c.gold}, rgba(212,175,55,0.7))`,
+              padding: "14px 32px", background: `linear-gradient(135deg, ${c.gold}, rgba(212,184,160,0.7))`,
               border: "none", borderRadius: "30px", color: "#000", fontSize: "14px",
               fontFamily: "'Cormorant', Georgia, serif", letterSpacing: "0.1em", cursor: "pointer",
               fontWeight: 500,
@@ -1025,7 +1025,7 @@ function ExchangeTab({ c }: { c: ReturnType<typeof useColors> }) {
           <div key={i} data-testid={`card-listing-${i}`}
             style={{ background: c.cardBg, border: `1px solid ${c.borderColor}`, borderRadius: "10px", padding: "14px", cursor: "pointer" }}>
             <div style={{ width: "40px", margin: "0 auto 8px" }}>
-              {BOTTLE_SHAPES[i % 5]("#9CA3AF", listing.fill, `ex-${i}`)}
+              {BOTTLE_SHAPES[i % 5]("#b0a090", listing.fill, `ex-${i}`)}
             </div>
             <p style={{ fontSize: "13px", margin: "0 0 2px", color: c.fg, textAlign: "center" }}>{listing.name}</p>
             <p style={{ fontSize: "11px", color: c.fgDim, margin: "0 0 6px", textAlign: "center" }}>~{listing.fill}% full</p>
@@ -1074,11 +1074,11 @@ function ProfileTab({ userId, c }: { userId: string; c: ReturnType<typeof useCol
   const myPosts = posts.filter(p => p.userId === userId);
 
   const scentDna = [
-    { name: "Amber", pct: 78, color: "#D4A052" },
-    { name: "Woody", pct: 64, color: "#5B8C5A" },
-    { name: "Floral", pct: 51, color: "#E8C4D8" },
-    { name: "Musk", pct: 43, color: "#8B8B8B" },
-    { name: "Citrus", pct: 31, color: "#FFD700" },
+    { name: "Amber", pct: 78, color: "#c4a890" },
+    { name: "Woody", pct: 64, color: "#a89080" },
+    { name: "Floral", pct: 51, color: "#dcc5b5" },
+    { name: "Musk", pct: 43, color: "#9a8a7a" },
+    { name: "Citrus", pct: 31, color: "#c9b8a8" },
   ];
 
   const funStats = [

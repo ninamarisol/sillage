@@ -37,7 +37,7 @@ export default function Feed() {
   if (!user) return null;
 
   const isDark = theme === "dark";
-  const bg = isDark ? "#000" : "#FFF8F5";
+  const bg = isDark ? "#000" : "#eddfd9";
   const fg = isDark ? "#fff" : "#1a1a1a";
   const fgSoft = isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.45)";
   const fgMuted = isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.2)";
@@ -267,7 +267,7 @@ export default function Feed() {
         }} onClick={(e) => { if (e.target === e.currentTarget) setShowPostModal(false); }}>
           <div style={{
             width: "100%", maxWidth: "600px",
-            background: isDark ? "#111" : "#FFF8F5",
+            background: isDark ? "#111" : "#eddfd9",
             borderRadius: "16px 16px 0 0", padding: "28px 24px 40px",
             animation: "slideUp 0.3s ease-out",
           }}>

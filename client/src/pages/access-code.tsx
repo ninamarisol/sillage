@@ -58,17 +58,17 @@ export default function AccessCode() {
     }
   };
 
-  const violet = "rgba(138,100,220,1)";
-  const violetDim = "rgba(138,100,220,0.35)";
-  const gold = "rgba(212,175,55,1)";
+  const accent = "#d4b8a0";
+  const accentDim = "rgba(212,184,160,0.35)";
+  const cream = "#eddfd9";
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
     padding: "18px 24px",
-    background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(255,255,255,0.1)",
+    background: "rgba(212,184,160,0.04)",
+    border: "1px solid rgba(212,184,160,0.15)",
     borderRadius: "40px",
-    color: "#ffffff",
+    color: cream,
     fontSize: "16px",
     letterSpacing: "0.03em",
     outline: "none",
@@ -81,10 +81,10 @@ export default function AccessCode() {
   const pillBtn = (filled: boolean): React.CSSProperties => ({
     width: "100%",
     padding: "18px 28px",
-    background: filled ? violet : "transparent",
-    border: `1.5px solid ${filled ? violet : violetDim}`,
+    background: filled ? accent : "transparent",
+    border: `1.5px solid ${filled ? accent : accentDim}`,
     borderRadius: "40px",
-    color: filled ? "#fff" : "rgba(255,255,255,0.7)",
+    color: filled ? "#000" : "rgba(237,223,217,0.7)",
     fontSize: "17px",
     letterSpacing: "0.04em",
     cursor: "pointer",
@@ -109,7 +109,7 @@ export default function AccessCode() {
     >
       <div style={{ textAlign: "center", width: "min(420px, 88vw)", animation: "fadeUp 0.7s ease-out" }}>
         <h1 style={{
-          color: gold,
+          color: cream,
           fontFamily: "'Pinyon Script', cursive",
           fontSize: "clamp(48px, 12vw, 72px)",
           marginBottom: "10px",
@@ -119,7 +119,7 @@ export default function AccessCode() {
           Sillage
         </h1>
         <p style={{
-          color: "rgba(255,255,255,0.35)",
+          color: "rgba(212,184,160,0.4)",
           fontSize: "17px",
           fontStyle: "italic",
           letterSpacing: "0.08em",
@@ -160,7 +160,7 @@ export default function AccessCode() {
               style={inputStyle}
             />
             <p style={{
-              color: "rgba(255,255,255,0.22)",
+              color: "rgba(212,184,160,0.22)",
               fontSize: "14px",
               marginTop: "16px",
               marginBottom: "32px",
@@ -170,7 +170,7 @@ export default function AccessCode() {
             </p>
 
             {error && (
-              <p data-testid="text-error" style={{ color: "rgba(220,80,80,0.85)", fontSize: "15px", marginBottom: "16px", lineHeight: 1.5 }}>
+              <p data-testid="text-error" style={{ color: "rgba(220,120,100,0.85)", fontSize: "15px", marginBottom: "16px", lineHeight: 1.5 }}>
                 {error}
               </p>
             )}
@@ -192,7 +192,7 @@ export default function AccessCode() {
             <p
               data-testid="button-back-choose"
               onClick={() => { setFlow("choose"); setError(""); }}
-              style={{ color: "rgba(255,255,255,0.22)", fontSize: "15px", cursor: "pointer", letterSpacing: "0.06em" }}
+              style={{ color: "rgba(212,184,160,0.22)", fontSize: "15px", cursor: "pointer", letterSpacing: "0.06em" }}
             >
               Back
             </p>
@@ -220,7 +220,7 @@ export default function AccessCode() {
             />
 
             {error && (
-              <p data-testid="text-error" style={{ color: "rgba(220,80,80,0.85)", fontSize: "15px", marginTop: "16px", lineHeight: 1.5 }}>
+              <p data-testid="text-error" style={{ color: "rgba(220,120,100,0.85)", fontSize: "15px", marginTop: "16px", lineHeight: 1.5 }}>
                 {error}
               </p>
             )}
@@ -243,7 +243,7 @@ export default function AccessCode() {
             <p
               data-testid="button-back-choose"
               onClick={() => { setFlow("choose"); setError(""); }}
-              style={{ color: "rgba(255,255,255,0.22)", fontSize: "15px", cursor: "pointer", letterSpacing: "0.06em" }}
+              style={{ color: "rgba(212,184,160,0.22)", fontSize: "15px", cursor: "pointer", letterSpacing: "0.06em" }}
             >
               Back
             </p>
@@ -257,8 +257,8 @@ export default function AccessCode() {
           to { opacity: 1; transform: translateY(0); }
         }
         body { margin: 0; background: #000 !important; }
-        input::placeholder { color: rgba(255,255,255,0.18); }
-        input:focus { border-color: rgba(138,100,220,0.5) !important; }
+        input::placeholder { color: rgba(212,184,160,0.2); }
+        input:focus { border-color: rgba(212,184,160,0.4) !important; }
       `}</style>
     </div>
   );

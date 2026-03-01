@@ -36,7 +36,7 @@ export default function Profile() {
   });
 
   const isDark = theme === "dark";
-  const bg = isDark ? "#000" : "#FFF8F5";
+  const bg = isDark ? "#000" : "#eddfd9";
   const fg = isDark ? "#fff" : "#1a1a1a";
   const fgSoft = isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.45)";
   const fgMuted = isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.2)";
