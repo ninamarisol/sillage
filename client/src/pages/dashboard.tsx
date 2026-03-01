@@ -6,9 +6,8 @@ import { getStoredUser, clearUser } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { ARCHETYPES, type ArchetypeId, type Fragrance, type VaultItem, type ToTryItem, WEAR_OCCASIONS, FAMILY_COLORS } from "@shared/schema";
 
-type MainTab = "home" | "explore" | "profile";
+type MainTab = "home" | "explore" | "reserve" | "profile";
 type HomeSubTab = "vault" | "log" | "totry";
-type ExploreSubTab = "feed" | "exchange";
 
 interface FeedPostData {
   id: string; userId: string; type: string; content: string | null;
@@ -1222,7 +1221,6 @@ function ProfileTab({ userId, c }: { userId: string; c: ReturnType<typeof useCol
 export default function Dashboard() {
   const [mainTab, setMainTab] = useState<MainTab>("home");
   const [homeSubTab, setHomeSubTab] = useState<HomeSubTab>("vault");
-  const [exploreSubTab, setExploreSubTab] = useState<ExploreSubTab>("feed");
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [detailFragrance, setDetailFragrance] = useState<(Fragrance & { matchScore?: number }) | null>(null);
@@ -1298,7 +1296,7 @@ export default function Dashboard() {
 
   const bottomNavIcon = (tab: MainTab, label: string) => {
     const active = mainTab === tab;
-    const icons: Record<MainTab, string> = { home: "\u2302", explore: "\u2661", profile: "\u2609" };
+    const icons: Record<MainTab, string> = { home: "🏠", explore: "🧭", reserve: "🛍", profile: "👤" };
     return (
       <button key={tab} data-testid={`nav-${tab}`}
         onClick={() => setMainTab(tab)}
@@ -1346,7 +1344,7 @@ export default function Dashboard() {
             </div>
 
             <nav style={{ display: "flex", borderBottom: `1px solid ${c.borderSoft}`, marginBottom: "24px" }}>
-              {([["vault", "My Vault"], ["log", "Scent Log"], ["totry", "To Try"]] as [HomeSubTab, string][]).map(([key, label]) => (
+              {([["vault", "Vault"], ["log", "Scent Log"], ["totry", "For You"]] as [HomeSubTab, string][]).map(([key, label]) => (
                 <button key={key} data-testid={`subtab-${key}`} onClick={() => setHomeSubTab(key)} style={subTabStyle(homeSubTab === key)}>{label}</button>
               ))}
             </nav>
@@ -1382,14 +1380,19 @@ export default function Dashboard() {
 
         {mainTab === "explore" && (
           <>
-            <nav style={{ display: "flex", borderBottom: `1px solid ${c.borderSoft}`, marginBottom: "24px" }}>
-              {([["feed", "Feed"], ["exchange", "Exchange"]] as [ExploreSubTab, string][]).map(([key, label]) => (
-                <button key={key} data-testid={`subtab-${key}`} onClick={() => setExploreSubTab(key)} style={subTabStyle(exploreSubTab === key)}>{label}</button>
-              ))}
-            </nav>
+            <p style={{ fontSize: "13px", color: c.goldDim, letterSpacing: "0.2em", textTransform: "uppercase", margin: "0 0 16px", fontWeight: 500 }}>
+              The Social Media Feed
+            </p>
+            <FeedTab userId={user.id} c={c} />
+          </>
+        )}
 
-            {exploreSubTab === "feed" && <FeedTab userId={user.id} c={c} />}
-            {exploreSubTab === "exchange" && <ExchangeTab c={c} />}
+        {mainTab === "reserve" && (
+          <>
+            <p style={{ fontSize: "13px", color: c.goldDim, letterSpacing: "0.2em", textTransform: "uppercase", margin: "0 0 16px", fontWeight: 500 }}>
+              The Reserve (paywalled)
+            </p>
+            <ExchangeTab c={c} />
           </>
         )}
 
@@ -1407,6 +1410,7 @@ export default function Dashboard() {
       }}>
         {bottomNavIcon("home", "Home")}
         {bottomNavIcon("explore", "Explore")}
+        {bottomNavIcon("reserve", "Reserve")}
         {bottomNavIcon("profile", "Profile")}
       </nav>
 
