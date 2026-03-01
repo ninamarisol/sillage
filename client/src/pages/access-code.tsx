@@ -65,8 +65,8 @@ export default function AccessCode() {
   const inputStyle: React.CSSProperties = {
     width: "100%",
     padding: "18px 24px",
-    background: "rgba(212,184,160,0.04)",
-    border: "1px solid rgba(212,184,160,0.15)",
+    background: "rgba(212,184,160,0.08)",
+    border: "1px solid rgba(212,184,160,0.35)",
     borderRadius: "40px",
     color: cream,
     fontSize: "16px",
@@ -84,7 +84,7 @@ export default function AccessCode() {
     background: filled ? accent : "transparent",
     border: `1.5px solid ${filled ? accent : accentDim}`,
     borderRadius: "40px",
-    color: filled ? "#000" : "rgba(237,223,217,0.7)",
+    color: filled ? "#000" : "rgba(237,223,217,0.85)",
     fontSize: "17px",
     letterSpacing: "0.04em",
     cursor: "pointer",
@@ -119,7 +119,7 @@ export default function AccessCode() {
           Sillage
         </h1>
         <p style={{
-          color: "rgba(212,184,160,0.4)",
+          color: "rgba(212,184,160,0.6)",
           fontSize: "17px",
           fontStyle: "italic",
           letterSpacing: "0.08em",
@@ -160,7 +160,7 @@ export default function AccessCode() {
               style={inputStyle}
             />
             <p style={{
-              color: "rgba(212,184,160,0.22)",
+              color: "rgba(212,184,160,0.45)",
               fontSize: "14px",
               marginTop: "16px",
               marginBottom: "32px",
@@ -192,7 +192,7 @@ export default function AccessCode() {
             <p
               data-testid="button-back-choose"
               onClick={() => { setFlow("choose"); setError(""); }}
-              style={{ color: "rgba(212,184,160,0.22)", fontSize: "15px", cursor: "pointer", letterSpacing: "0.06em" }}
+              style={{ color: "rgba(212,184,160,0.5)", fontSize: "15px", cursor: "pointer", letterSpacing: "0.06em" }}
             >
               Back
             </p>
@@ -243,7 +243,7 @@ export default function AccessCode() {
             <p
               data-testid="button-back-choose"
               onClick={() => { setFlow("choose"); setError(""); }}
-              style={{ color: "rgba(212,184,160,0.22)", fontSize: "15px", cursor: "pointer", letterSpacing: "0.06em" }}
+              style={{ color: "rgba(212,184,160,0.5)", fontSize: "15px", cursor: "pointer", letterSpacing: "0.06em" }}
             >
               Back
             </p>
@@ -257,8 +257,8 @@ export default function AccessCode() {
           to { opacity: 1; transform: translateY(0); }
         }
         body { margin: 0; background: #000 !important; }
-        input::placeholder { color: rgba(212,184,160,0.2); }
-        input:focus { border-color: rgba(212,184,160,0.4) !important; }
+        input::placeholder { color: rgba(212,184,160,0.5); }
+        input:focus { border-color: rgba(212,184,160,0.55) !important; }
       `}</style>
     </div>
   );
