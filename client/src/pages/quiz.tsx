@@ -9,6 +9,8 @@ import {
   type ArchetypeId,
 } from "@shared/schema";
 
+const QUIZ_PHOTOS = ["/frames/ezgif-frame-018.jpg", "/frames/ezgif-frame-065.jpg", "/frames/ezgif-frame-111.jpg"];
+
 const seasonLabels: Record<string, { sub: string }> = {
   Spring: { sub: "Bloom & renewal" },
   Summer: { sub: "Warmth & radiance" },
@@ -158,6 +160,15 @@ export default function Quiz() {
               background: i <= step ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.07)",
               borderRadius: "1px", transition: "background 0.5s ease",
             }} />
+          ))}
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px", marginBottom: "32px" }}>
+          {QUIZ_PHOTOS.map((photo, idx) => (
+            <div key={photo} style={{ position: "relative", height: "92px", borderRadius: "10px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.12)" }}>
+              <img src={photo} alt={`Perfume inspiration ${idx + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.72 }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.45))" }} />
+            </div>
           ))}
         </div>
 

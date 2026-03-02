@@ -5,6 +5,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { getStoredUser, clearUser } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { ARCHETYPES, type ArchetypeId, type Fragrance, type VaultItem, type ToTryItem, WEAR_OCCASIONS, FAMILY_COLORS } from "@shared/schema";
+import { House, Compass, Gem, UserRound } from "lucide-react";
 
 type MainTab = "home" | "explore" | "reserve" | "profile";
 type HomeSubTab = "vault" | "log" | "totry";
@@ -22,17 +23,53 @@ interface WearLogData {
   fragrance?: Fragrance | null;
 }
 
+const PERFUME_PHOTOS = [
+  "/frames/ezgif-frame-024.jpg",
+  "/frames/ezgif-frame-061.jpg",
+  "/frames/ezgif-frame-083.jpg",
+  "/frames/ezgif-frame-101.jpg",
+  "/frames/ezgif-frame-112.jpg",
+  "/frames/ezgif-frame-121.jpg",
+];
+
+const DEMO_FRAGRANCES: any[] = [
+  { id: "demo-f1", name: "YSL Libre EDP", house: "Yves Saint Laurent", family: "Amber Floral", concentration: null, topNotes: null, heartNotes: null, baseNotes: null, imageUrl: null, description: null },
+  { id: "demo-f2", name: "La Vie Est Belle", house: "Lancôme", family: "Floral Gourmand", concentration: null, topNotes: null, heartNotes: null, baseNotes: null, imageUrl: null, description: null },
+  { id: "demo-f3", name: "Replica Jazz Club", house: "Maison Margiela", family: "Woody Amber", concentration: null, topNotes: null, heartNotes: null, baseNotes: null, imageUrl: null, description: null },
+  { id: "demo-f4", name: "Black Orchid", house: "Tom Ford", family: "Dark Floral", concentration: null, topNotes: null, heartNotes: null, baseNotes: null, imageUrl: null, description: null },
+  { id: "demo-f5", name: "Delina", house: "Parfums de Marly", family: "Floral", concentration: null, topNotes: null, heartNotes: null, baseNotes: null, imageUrl: null, description: null },
+  { id: "demo-f6", name: "Oud Wood", house: "Tom Ford", family: "Woody", concentration: null, topNotes: null, heartNotes: null, baseNotes: null, imageUrl: null, description: null },
+];
+
+const DEMO_VAULT_ITEMS: any[] = [
+  { id: "demo-v1", userId: "demo", fragranceId: "demo-f1", bottleSize: null, fillLevel: 75, wearFrequency: "weekly", wouldSell: false, rating: 4, notes: null, matchScore: 84, addedAt: new Date() as any, fragrance: DEMO_FRAGRANCES[0] },
+  { id: "demo-v2", userId: "demo", fragranceId: "demo-f2", bottleSize: null, fillLevel: 40, wearFrequency: "daily", wouldSell: false, rating: 5, notes: null, matchScore: 91, addedAt: new Date() as any, fragrance: DEMO_FRAGRANCES[1] },
+  { id: "demo-v3", userId: "demo", fragranceId: "demo-f3", bottleSize: null, fillLevel: 90, wearFrequency: "weekly", wouldSell: false, rating: 4, notes: null, matchScore: 78, addedAt: new Date() as any, fragrance: DEMO_FRAGRANCES[2] },
+  { id: "demo-v4", userId: "demo", fragranceId: "demo-f4", bottleSize: null, fillLevel: 30, wearFrequency: "rare", wouldSell: true, rating: 5, notes: null, matchScore: 88, addedAt: new Date() as any, fragrance: DEMO_FRAGRANCES[3] },
+];
+
+const DEMO_TOTRY_ITEMS: any[] = [
+  { id: "demo-t1", userId: "demo", fragranceId: "demo-f5", priority: "high", matchScore: 91, addedAt: new Date() as any, fragrance: DEMO_FRAGRANCES[4] },
+  { id: "demo-t2", userId: "demo", fragranceId: "demo-f6", priority: "curious", matchScore: 83, addedAt: new Date() as any, fragrance: DEMO_FRAGRANCES[5] },
+];
+
+const DEMO_WEAR_LOGS: WearLogData[] = [
+  { id: "demo-w1", userId: "demo", fragranceId: "demo-f2", occasion: "Date Night", notes: "Soft trail all evening.", wornAt: new Date().toISOString(), fragrance: DEMO_FRAGRANCES[1] },
+  { id: "demo-w2", userId: "demo", fragranceId: "demo-f1", occasion: "Work", notes: "Confident and polished.", wornAt: new Date(Date.now() - 86400000).toISOString(), fragrance: DEMO_FRAGRANCES[0] },
+  { id: "demo-w3", userId: "demo", fragranceId: "demo-f3", occasion: "Travel", notes: "Perfect airport scent.", wornAt: new Date(Date.now() - 172800000).toISOString(), fragrance: DEMO_FRAGRANCES[2] },
+];
+
 function useColors() {
   const { theme } = useTheme();
   const d = theme === "dark";
   return {
     isDark: d, bg: d ? "#000" : "#eddfd9", fg: d ? "#fff" : "#1a1a1a",
-    fgSoft: d ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)",
-    fgMuted: d ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.25)",
-    fgDim: d ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.35)",
-    fgLabel: d ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.4)",
-    fgStrong: d ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,0.85)",
-    fgMid: d ? "rgba(255,255,255,0.65)" : "rgba(0,0,0,0.55)",
+    fgSoft: d ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.82)",
+    fgMuted: d ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.62)",
+    fgDim: d ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.74)",
+    fgLabel: d ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.78)",
+    fgStrong: d ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,0.95)",
+    fgMid: d ? "rgba(255,255,255,0.65)" : "rgba(0,0,0,0.88)",
     cardBg: d ? "rgba(255,255,255,0.025)" : "rgba(0,0,0,0.025)",
     cardBgHover: d ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
     borderColor: d ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)",
@@ -485,24 +522,41 @@ function GlassShelfVault({ items, onEdit, onDetail, onRemove, onAdd, onLogWear, 
   );
 }
 
-function ScentLogTab({ userId, vaultItems: vitems, c }: { userId: string; vaultItems: (VaultItem & { fragrance: Fragrance })[]; c: ReturnType<typeof useColors> }) {
+function ScentLogTab({ userId, vaultItems: vitems, wearLogsOverride, onQuickLog, c }: {
+  userId: string;
+  vaultItems: (VaultItem & { fragrance: Fragrance })[];
+  wearLogsOverride?: WearLogData[];
+  onQuickLog?: (data: { fragranceId: string; occasion?: string; notes?: string }) => void;
+  c: ReturnType<typeof useColors>;
+}) {
   const [showQuickLog, setShowQuickLog] = useState(false);
   const [selectedFrag, setSelectedFrag] = useState<string | null>(null);
   const [logMood, setLogMood] = useState("");
   const [logNote, setLogNote] = useState("");
 
-  const { data: wearLogs = [] } = useQuery<WearLogData[]>({
+  const usingLocalLogs = Boolean(wearLogsOverride);
+
+  const { data: apiWearLogs = [] } = useQuery<WearLogData[]>({
     queryKey: ["/api/users", userId, "wear-logs"],
     queryFn: async () => { const res = await fetch(`/api/users/${userId}/wear-logs`); return res.json(); },
+    enabled: !usingLocalLogs,
   });
+
+  const wearLogs = wearLogsOverride ?? apiWearLogs;
 
   const logWear = useMutation({
     mutationFn: async (data: { fragranceId: string; occasion?: string; notes?: string }) => {
+      if (usingLocalLogs) {
+        onQuickLog?.(data);
+        return data;
+      }
       const res = await apiRequest("POST", `/api/users/${userId}/wear-logs`, data);
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/users", userId, "wear-logs"] });
+      if (!usingLocalLogs) {
+        queryClient.invalidateQueries({ queryKey: ["/api/users", userId, "wear-logs"] });
+      }
       setShowQuickLog(false); setSelectedFrag(null); setLogMood(""); setLogNote("");
     },
   });
@@ -611,10 +665,13 @@ function ScentLogTab({ userId, vaultItems: vitems, c }: { userId: string; vaultI
   );
 }
 
-function ToTryTab({ userId, vaultFragIds, toTryItems: items, onDetail, c }: {
+function ToTryTab({ userId, vaultFragIds, toTryItems: items, onDetail, onOwnIt, onUpdatePriority, onRemoveItem, c }: {
   userId: string; vaultFragIds: Set<string>;
   toTryItems: (ToTryItem & { fragrance: Fragrance })[];
   onDetail: (frag: Fragrance, matchScore?: number) => void;
+  onOwnIt?: (item: ToTryItem & { fragrance: Fragrance }) => void;
+  onUpdatePriority?: (id: string, priority: string) => void;
+  onRemoveItem?: (id: string) => void;
   c: ReturnType<typeof useColors>;
 }) {
   const archetype = getStoredUser()?.archetypeId ? ARCHETYPES[getStoredUser()!.archetypeId as ArchetypeId] : null;
@@ -683,12 +740,12 @@ function ToTryTab({ userId, vaultFragIds, toTryItems: items, onDetail, c }: {
       </div>
       <div style={{ display: "flex", gap: "8px", marginTop: "10px", alignItems: "center" }}>
         {!vaultFragIds.has(item.fragranceId) && (
-          <button data-testid={`button-try-to-vault-${item.id}`} onClick={e => { e.stopPropagation(); addToVault.mutate(item.fragranceId); removeFromToTry.mutate(item.id); }}
+          <button data-testid={`button-try-to-vault-${item.id}`} onClick={e => { e.stopPropagation(); if (onOwnIt) onOwnIt(item); else { addToVault.mutate(item.fragranceId); removeFromToTry.mutate(item.id); } }}
             style={{ padding: "5px 12px", background: c.chipActive, border: `1px solid ${c.borderColor}`, borderRadius: "20px", color: c.fgMid, fontSize: "11px", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif" }}>Own it</button>
         )}
         <div style={{ display: "flex", gap: "4px", marginLeft: "auto" }}>
           {["high", "curious", "someday"].map(p => (
-            <button key={p} onClick={e => { e.stopPropagation(); updatePriority.mutate({ id: item.id, priority: p }); }}
+            <button key={p} onClick={e => { e.stopPropagation(); onUpdatePriority ? onUpdatePriority(item.id, p) : updatePriority.mutate({ id: item.id, priority: p }); }}
               style={{
                 padding: "3px 8px", borderRadius: "10px", fontSize: "9px", cursor: "pointer", fontFamily: "'Cormorant', Georgia, serif",
                 textTransform: "uppercase", letterSpacing: "0.08em",
@@ -698,7 +755,7 @@ function ToTryTab({ userId, vaultFragIds, toTryItems: items, onDetail, c }: {
               }}>{p === "high" ? "High" : p === "curious" ? "Curious" : "Someday"}</button>
           ))}
         </div>
-        <button data-testid={`button-remove-try-${item.id}`} onClick={e => { e.stopPropagation(); removeFromToTry.mutate(item.id); }}
+        <button data-testid={`button-remove-try-${item.id}`} onClick={e => { e.stopPropagation(); onRemoveItem ? onRemoveItem(item.id) : removeFromToTry.mutate(item.id); }}
           style={{ background: "transparent", border: "none", color: c.fgMuted, fontSize: "16px", cursor: "pointer", padding: "2px" }}>{"\u00D7"}</button>
       </div>
     </div>
@@ -783,6 +840,13 @@ function FeedTab({ userId, c }: { userId: string; c: ReturnType<typeof useColors
 
   const sampleCreators = new Set(["scentedbylayla", "fragrancebydan"]);
 
+  const demoPosts: FeedPostData[] = [
+    { id: "demo-p1", userId: "u1", type: "bottle_shot", content: "Byredo Gypsy Water in the wild. First wear of fall.", fragranceId: "demo-f5", rating: null, likeCount: 21, createdAt: new Date().toISOString(), liked: false, user: { id: "u1", username: "greenscents", displayName: "Green Scents", archetypeId: "green-wanderer" }, fragrance: DEMO_FRAGRANCES[4] },
+    { id: "demo-p2", userId: "u2", type: "review", content: "Jazz Club stays warm, smoky, and creamy on skin. Immediate compliment magnet.", fragranceId: "demo-f3", rating: 5, likeCount: 34, createdAt: new Date(Date.now() - 7200000).toISOString(), liked: false, user: { id: "u2", username: "scentedbylayla", displayName: "Layla", archetypeId: "velvet-dusk" }, fragrance: DEMO_FRAGRANCES[2] },
+    { id: "demo-p3", userId: "u3", type: "layering_stack", content: "Sauvage + Wood Sage & Sea Salt. Trust me.", fragranceId: "demo-f1", rating: null, likeCount: 15, createdAt: new Date(Date.now() - 10800000).toISOString(), liked: false, user: { id: "u3", username: "cecifrag", displayName: "Ceci", archetypeId: "solar-nomad" }, fragrance: DEMO_FRAGRANCES[0] },
+  ];
+  const feedPosts = posts.length > 0 ? posts : demoPosts;
+
   return (
     <div data-testid="tab-content-feed" style={{ animation: "fadeUp 0.5s ease-out" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
@@ -794,7 +858,7 @@ function FeedTab({ userId, c }: { userId: string; c: ReturnType<typeof useColors
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-        {posts.map(post => {
+        {feedPosts.map((post, idx) => {
           const postArch = post.user?.archetypeId ? ARCHETYPES[post.user.archetypeId as ArchetypeId] : null;
           const isCreator = sampleCreators.has(post.user?.username || "");
           const inToTry = post.fragranceId && toTryFragIds.has(post.fragranceId);
@@ -838,6 +902,10 @@ function FeedTab({ userId, c }: { userId: string; c: ReturnType<typeof useColors
                   {"\u2605".repeat(post.rating)}<span style={{ color: c.fgMuted }}>{"\u2606".repeat(5 - post.rating)}</span>
                 </p>
               )}
+
+              <div style={{ height: "170px", borderRadius: "8px", overflow: "hidden", marginBottom: "12px", border: `1px solid ${c.borderColor}` }}>
+                <img src={PERFUME_PHOTOS[idx % PERFUME_PHOTOS.length]} alt="Perfume post" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              </div>
 
               {post.content && (
                 <p style={{ fontSize: "15px", lineHeight: 1.7, margin: "0 0 12px", color: c.fgStrong }}>{post.content}</p>
@@ -936,7 +1004,7 @@ function ExchangeTab({ c }: { c: ReturnType<typeof useColors> }) {
 
   if (!isSubscribed) {
     return (
-      <div data-testid="tab-content-exchange" style={{ animation: "fadeUp 0.5s ease-out", position: "relative" }}>
+      <div data-testid="tab-content-reserve" style={{ animation: "fadeUp 0.5s ease-out", position: "relative" }}>
         <div style={{ filter: "blur(6px)", opacity: 0.3, pointerEvents: "none" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
             {listings.map((l, i) => (
@@ -954,11 +1022,11 @@ function ExchangeTab({ c }: { c: ReturnType<typeof useColors> }) {
           backdropFilter: "blur(4px)", borderRadius: "12px", padding: "40px 24px", textAlign: "center",
         }}>
           <div style={{ fontSize: "40px", marginBottom: "16px", color: c.gold }}>*</div>
-          <h3 style={{ fontFamily: "'Pinyon Script', cursive", fontSize: "36px", color: c.gold, fontWeight: 400, margin: "0 0 12px" }}>The Exchange</h3>
+          <h3 style={{ fontFamily: "'Pinyon Script', cursive", fontSize: "36px", color: c.gold, fontWeight: 400, margin: "0 0 12px" }}>The Reserve</h3>
           <p style={{ color: c.fgSoft, fontSize: "17px", marginBottom: "18px", lineHeight: 1.7, fontStyle: "italic" }}>Members only. Buy and sell authenticated luxury fragrance.</p>
           <p style={{ color: c.fgDim, fontSize: "14px", margin: "0 0 5px" }}>Peer-to-peer authenticated resale</p>
           <p style={{ color: c.fgDim, fontSize: "14px", margin: "0 0 28px" }}>Exclusive discontinued drops</p>
-          <button data-testid="button-join-exchange"
+          <button data-testid="button-join-reserve"
             onClick={() => setIsSubscribed(true)}
             style={{
               padding: "14px 32px", background: `linear-gradient(135deg, ${c.gold}, rgba(212,184,160,0.7))`,
@@ -966,7 +1034,7 @@ function ExchangeTab({ c }: { c: ReturnType<typeof useColors> }) {
               fontFamily: "'Cormorant', Georgia, serif", letterSpacing: "0.1em", cursor: "pointer",
               fontWeight: 500,
             }}>
-            Join the Exchange - $9.99/mo
+            Join The Reserve - $9.99/mo
           </button>
           <p style={{ color: c.fgMuted, fontSize: "12px", marginTop: "10px" }}>or $89/yr - Cancel anytime</p>
         </div>
@@ -975,10 +1043,10 @@ function ExchangeTab({ c }: { c: ReturnType<typeof useColors> }) {
   }
 
   return (
-    <div data-testid="tab-content-exchange" style={{ animation: "fadeUp 0.5s ease-out" }}>
+    <div data-testid="tab-content-reserve" style={{ animation: "fadeUp 0.5s ease-out" }}>
       <div style={{ marginBottom: "28px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
-          <h3 style={{ fontSize: "16px", fontWeight: 400, margin: 0, color: c.gold }}>L'Oreal Drops</h3>
+          <h3 style={{ fontSize: "16px", fontWeight: 400, margin: 0, color: c.gold }}>The Reserve Drops</h3>
           <span style={{ fontSize: "12px", color: c.fgDim }}>Limited time</span>
         </div>
         <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "8px" }}>
@@ -986,6 +1054,7 @@ function ExchangeTab({ c }: { c: ReturnType<typeof useColors> }) {
             <div key={i} data-testid={`card-drop-${i}`}
               style={{ minWidth: "220px", borderRadius: "12px", overflow: "hidden", border: `1px solid ${c.borderColor}`, flexShrink: 0 }}>
               <div style={{ height: "100px", background: drop.gradient, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+                <img src={PERFUME_PHOTOS[i % PERFUME_PHOTOS.length]} alt={drop.name} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.7 }} />
                 <span style={{ position: "absolute", top: "8px", left: "8px", fontSize: "9px", padding: "2px 8px", background: "rgba(212,175,55,0.9)", borderRadius: "4px", color: "#000", fontWeight: 600, letterSpacing: "0.1em" }}>DISCONTINUED</span>
               </div>
               <div style={{ padding: "12px 14px", background: c.cardBg }}>
@@ -1023,6 +1092,9 @@ function ExchangeTab({ c }: { c: ReturnType<typeof useColors> }) {
         {listings.map((listing, i) => (
           <div key={i} data-testid={`card-listing-${i}`}
             style={{ background: c.cardBg, border: `1px solid ${c.borderColor}`, borderRadius: "10px", padding: "14px", cursor: "pointer" }}>
+            <div style={{ height: "82px", marginBottom: "8px", borderRadius: "8px", overflow: "hidden" }}>
+              <img src={PERFUME_PHOTOS[(i + 2) % PERFUME_PHOTOS.length]} alt={listing.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </div>
             <div style={{ width: "40px", margin: "0 auto 8px" }}>
               {BOTTLE_SHAPES[i % 5]("#b0a090", listing.fill, `ex-${i}`)}
             </div>
@@ -1042,9 +1114,9 @@ function ExchangeTab({ c }: { c: ReturnType<typeof useColors> }) {
       </div>
 
       <div style={{ textAlign: "center", marginTop: "24px" }}>
-        <button data-testid="button-unsubscribe-exchange" onClick={() => setIsSubscribed(false)}
+        <button data-testid="button-unsubscribe-reserve" onClick={() => setIsSubscribed(false)}
           style={{ background: "none", border: "none", color: c.fgMuted, fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>
-          (Demo: toggle subscription off)
+          (Demo: leave The Reserve)
         </button>
       </div>
     </div>
@@ -1226,6 +1298,9 @@ export default function Dashboard() {
   const [detailFragrance, setDetailFragrance] = useState<(Fragrance & { matchScore?: number }) | null>(null);
   const [editingVaultItem, setEditingVaultItem] = useState<(VaultItem & { fragrance: Fragrance }) | null>(null);
   const [wearLogFragId, setWearLogFragId] = useState<string | null>(null);
+  const [localVaultItems, setLocalVaultItems] = useState<any[]>(DEMO_VAULT_ITEMS);
+  const [localToTryItems, setLocalToTryItems] = useState<any[]>(DEMO_TOTRY_ITEMS);
+  const [localWearLogs, setLocalWearLogs] = useState<WearLogData[]>(DEMO_WEAR_LOGS);
   const [, setLocation] = useLocation();
   const user = getStoredUser();
   const c = useColors();
@@ -1254,6 +1329,12 @@ export default function Dashboard() {
     queryFn: async () => { const res = await fetch(`/api/users/${user.id}/to-try`); return res.json(); },
   });
 
+
+  const usingLocalVault = vaultItems.length === 0;
+  const usingLocalToTry = toTryItems.length === 0;
+  const effectiveVaultItems = usingLocalVault ? localVaultItems : vaultItems;
+  const effectiveToTryItems = usingLocalToTry ? localToTryItems : toTryItems;
+
   const { data: searchResults = [] } = useQuery<Fragrance[]>({
     queryKey: ["/api/fragrances", searchQuery],
     queryFn: async () => { if (!searchQuery.trim()) return []; const res = await fetch(`/api/fragrances?search=${encodeURIComponent(searchQuery)}`); return res.json(); },
@@ -1281,9 +1362,9 @@ export default function Dashboard() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/users", user.id, "wear-logs"] }); queryClient.invalidateQueries({ queryKey: ["/api/feed"] }); setWearLogFragId(null); },
   });
 
-  const vaultFragIds = new Set(vaultItems.map(v => v.fragranceId));
+  const vaultFragIds = new Set(effectiveVaultItems.map(v => v.fragranceId));
 
-  const wearLogFragName = wearLogFragId ? (vaultItems.find(v => v.fragranceId === wearLogFragId)?.fragrance?.name || "Fragrance") : "";
+  const wearLogFragName = wearLogFragId ? (effectiveVaultItems.find(v => v.fragranceId === wearLogFragId)?.fragrance?.name || "Fragrance") : "";
 
   const subTabStyle = (active: boolean) => ({
     padding: "12px 0", background: "transparent", border: "none",
@@ -1306,7 +1387,7 @@ export default function Dashboard() {
           color: active ? c.gold : c.fgDim, transition: "all 0.3s ease",
           position: "relative",
         }}>
-        <span style={{ fontSize: "22px", transition: "transform 0.3s ease", transform: active ? "scale(1.15)" : "scale(1)" }}>{icons[tab]}</span>
+        <Icon size={19} strokeWidth={1.85} style={{ transition: "transform 0.3s ease", transform: active ? "scale(1.12)" : "scale(1)" }} />
         <span style={{ fontSize: "11px", letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: active ? 600 : 400 }}>{label}</span>
         {active && <span style={{ position: "absolute", top: "-1px", left: "50%", transform: "translateX(-50%)", width: "24px", height: "2px", background: c.gold, borderRadius: "2px" }} />}
       </button>
@@ -1340,7 +1421,7 @@ export default function Dashboard() {
               {archetype && (
                 <p style={{ fontSize: "13px", color: c.goldDim, letterSpacing: "0.2em", textTransform: "uppercase", margin: "0 0 6px", fontWeight: 500 }}>{archetype.name}</p>
               )}
-              <p style={{ fontSize: "16px", color: c.fgSoft, margin: 0, fontStyle: "italic" }}>{vaultItems.length} bottles in your vault</p>
+              <p style={{ fontSize: "16px", color: c.fgSoft, margin: 0, fontStyle: "italic" }}>{effectiveVaultItems.length} bottles in your vault</p>
             </div>
 
             <nav style={{ display: "flex", borderBottom: `1px solid ${c.borderSoft}`, marginBottom: "24px" }}>
@@ -1356,10 +1437,10 @@ export default function Dashboard() {
                     style={{ padding: "8px 18px", background: c.chipActive, border: `1px solid ${c.borderColor}`, borderRadius: "24px", color: c.fgMid, fontSize: "13px", letterSpacing: "0.15em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'Cormorant Garamond', Georgia, serif", transition: "all 0.2s ease" }}>+ Add</button>
                 </div>
                 <GlassShelfVault
-                  items={vaultItems}
+                  items={effectiveVaultItems}
                   onEdit={setEditingVaultItem}
                   onDetail={setDetailFragrance}
-                  onRemove={(id) => removeFromVault.mutate(id)}
+                  onRemove={(id) => usingLocalVault ? setLocalVaultItems(prev => prev.filter(v => v.id !== id)) : removeFromVault.mutate(id)}
                   onAdd={() => setShowAddModal(true)}
                   onLogWear={(fid) => setWearLogFragId(fid)}
                   c={c}
@@ -1368,12 +1449,27 @@ export default function Dashboard() {
             )}
 
             {homeSubTab === "log" && (
-              <ScentLogTab userId={user.id} vaultItems={vaultItems} c={c} />
+              <ScentLogTab
+              userId={user.id}
+              vaultItems={effectiveVaultItems}
+              wearLogsOverride={usingLocalVault ? localWearLogs : undefined}
+              onQuickLog={(data) => setLocalWearLogs(prev => [{ id: `local-${Date.now()}`, userId: user.id, fragranceId: data.fragranceId, occasion: data.occasion || null, notes: data.notes || null, wornAt: new Date().toISOString(), fragrance: effectiveVaultItems.find(v => v.fragranceId === data.fragranceId)?.fragrance }, ...prev])}
+              c={c}
+            />
             )}
 
             {homeSubTab === "totry" && (
-              <ToTryTab userId={user.id} vaultFragIds={vaultFragIds} toTryItems={toTryItems}
-                onDetail={(frag, score) => setDetailFragrance({ ...frag, matchScore: score } as any)} c={c} />
+              <ToTryTab userId={user.id} vaultFragIds={vaultFragIds} toTryItems={effectiveToTryItems}
+                onDetail={(frag, score) => setDetailFragrance({ ...frag, matchScore: score } as any)}
+                onOwnIt={(item) => {
+                  setLocalToTryItems(prev => prev.filter(t => t.id !== item.id));
+                  if (!vaultFragIds.has(item.fragranceId)) {
+                    setLocalVaultItems(prev => [{ id: `local-v-${Date.now()}`, userId: user.id, fragranceId: item.fragranceId, bottleSize: null, fillLevel: 100, wearFrequency: null, wouldSell: false, rating: null, notes: null, matchScore: null, addedAt: new Date() as any, fragrance: item.fragrance }, ...prev]);
+                  }
+                }}
+                onUpdatePriority={(id, priority) => setLocalToTryItems(prev => prev.map(item => item.id === id ? { ...item, priority } : item))}
+                onRemoveItem={(id) => setLocalToTryItems(prev => prev.filter(item => item.id !== id))}
+                c={c} />
             )}
           </>
         )}
@@ -1426,7 +1522,7 @@ export default function Dashboard() {
               style={{ width: "100%", padding: "14px 18px", background: c.inputBg, border: `1px solid ${c.borderColor}`, borderRadius: "6px", color: c.fg, fontSize: "15px", fontFamily: "'Cormorant', Georgia, serif", outline: "none", boxSizing: "border-box", marginBottom: "16px" }} />
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {searchResults.filter(f => !vaultFragIds.has(f.id)).map(frag => (
-                <div key={frag.id} data-testid={`card-modal-frag-${frag.id}`} onClick={() => addToVault.mutate(frag.id)}
+                <div key={frag.id} data-testid={`card-modal-frag-${frag.id}`} onClick={() => usingLocalVault ? setLocalVaultItems(prev => [{ id: `local-v-${Date.now()}`, userId: user.id, fragranceId: frag.id, bottleSize: null, fillLevel: 100, wearFrequency: null, wouldSell: false, rating: null, notes: null, matchScore: null, addedAt: new Date() as any, fragrance: frag }, ...prev]) : addToVault.mutate(frag.id)}
                   style={{ background: c.cardBg, border: `1px solid ${c.borderColor}`, borderRadius: "8px", padding: "14px 16px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
                     <p style={{ fontSize: "16px", margin: "0 0 3px" }}>{frag.name}</p>
@@ -1445,10 +1541,10 @@ export default function Dashboard() {
           fragrance={detailFragrance}
           matchScore={(detailFragrance as any).matchScore}
           onClose={() => setDetailFragrance(null)}
-          onAddVault={() => addToVault.mutate(detailFragrance.id)}
-          onAddTry={(priority) => addToTry.mutate({ fragranceId: detailFragrance.id, priority })}
+          onAddVault={() => usingLocalVault ? setLocalVaultItems(prev => [{ id: `local-v-${Date.now()}`, userId: user.id, fragranceId: detailFragrance.id, bottleSize: null, fillLevel: 100, wearFrequency: null, wouldSell: false, rating: null, notes: null, matchScore: null, addedAt: new Date() as any, fragrance: detailFragrance }, ...prev]) : addToVault.mutate(detailFragrance.id)}
+          onAddTry={(priority) => usingLocalToTry ? setLocalToTryItems(prev => [{ id: `local-t-${Date.now()}`, userId: user.id, fragranceId: detailFragrance.id, priority, matchScore: (detailFragrance as any).matchScore ?? 75, addedAt: new Date() as any, fragrance: detailFragrance }, ...prev]) : addToTry.mutate({ fragranceId: detailFragrance.id, priority })}
           inVault={vaultFragIds.has(detailFragrance.id)}
-          inTry={new Set(toTryItems.map(t => t.fragranceId)).has(detailFragrance.id)}
+          inTry={new Set(effectiveToTryItems.map(t => t.fragranceId)).has(detailFragrance.id)}
           onLogWear={vaultFragIds.has(detailFragrance.id) ? () => { setWearLogFragId(detailFragrance.id); setDetailFragrance(null); } : undefined}
           c={c}
         />
@@ -1459,7 +1555,7 @@ export default function Dashboard() {
           item={editingVaultItem}
           fragrance={editingVaultItem.fragrance}
           onClose={() => setEditingVaultItem(null)}
-          onSave={(updates) => updateVaultItem.mutate({ id: editingVaultItem.id, updates })}
+          onSave={(updates) => usingLocalVault ? (setLocalVaultItems(prev => prev.map(item => item.id === editingVaultItem.id ? { ...item, ...updates } : item)), setEditingVaultItem(null)) : updateVaultItem.mutate({ id: editingVaultItem.id, updates })}
           c={c}
         />
       )}
@@ -1469,7 +1565,7 @@ export default function Dashboard() {
           fragranceId={wearLogFragId}
           fragranceName={wearLogFragName}
           onClose={() => setWearLogFragId(null)}
-          onSubmit={(data) => logWear.mutate(data)}
+          onSubmit={(data) => usingLocalVault ? (setLocalWearLogs(prev => [{ id: `local-${Date.now()}`, userId: user.id, fragranceId: data.fragranceId, occasion: data.occasion || null, notes: data.notes || null, wornAt: new Date().toISOString(), fragrance: effectiveVaultItems.find(v => v.fragranceId === data.fragranceId)?.fragrance }, ...prev]), setWearLogFragId(null)) : logWear.mutate(data)}
           isPending={logWear.isPending}
           c={c}
         />
