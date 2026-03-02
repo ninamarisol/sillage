@@ -1377,8 +1377,7 @@ export default function Dashboard() {
 
   const bottomNavIcon = (tab: MainTab, label: string) => {
     const active = mainTab === tab;
-    const icons: Record<MainTab, any> = { home: House, explore: Compass, reserve: Gem, profile: UserRound };
-    const Icon = icons[tab];
+    const icons: Record<MainTab, string> = { home: "🏠", explore: "🧭", reserve: "🛍", profile: "👤" };
     return (
       <button key={tab} data-testid={`nav-${tab}`}
         onClick={() => setMainTab(tab)}
